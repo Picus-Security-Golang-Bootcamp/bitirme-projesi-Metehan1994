@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Metehan1994/final-project/internal/category"
+	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/Metehan1994/final-project/pkg/config"
 	db "github.com/Metehan1994/final-project/pkg/database"
 	logger "github.com/Metehan1994/final-project/pkg/logging"
@@ -23,7 +25,15 @@ func main() {
 	defer logger.Close()
 
 	// Connect DB
-	db.Connect(cfg)
+	DB := db.Connect(cfg)
 	fmt.Println("Connected to DB")
+
+	// Product Repository
+	productRepo := product.NewProductRepository(DB)
+	productRepo.Migration()
+
+	// Category Repository
+	categoryRepo := category.NewCategoryRepository(DB)
+	categoryRepo.Migration()
 
 }
