@@ -1,0 +1,25 @@
+ServerConfig:
+  AppVersion: 1.0.0
+  Mode: Development
+  RoutePrefix: /api/v1/basket-service
+  Debug: false
+  Port: 8080
+  TimeoutSecs: 60
+  ReadTimeoutSecs: 60
+  WriteTimeoutSecs: 12
+
+JWTConfig:
+  SessionTime: 3600
+  SecretKey: Secret-Key
+
+DBConfig:
+  DataSourceName: host=localhost user=postgres password=posgres dbname=Bootcamp-Final-Project port=5432 sslmode=disable
+  MaxOpen: 50
+  MaxIdle: 50
+  MaxLifetime: 5
+
+Logger:
+  Development: true
+  Encoding: json
+  Level: info
+
