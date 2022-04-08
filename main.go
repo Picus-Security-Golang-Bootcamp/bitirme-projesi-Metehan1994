@@ -6,7 +6,9 @@ import (
 
 	"github.com/Metehan1994/final-project/internal/category"
 	"github.com/Metehan1994/final-project/internal/product"
+	"github.com/Metehan1994/final-project/internal/user"
 	"github.com/Metehan1994/final-project/pkg/config"
+	csvReader "github.com/Metehan1994/final-project/pkg/csv"
 	db "github.com/Metehan1994/final-project/pkg/database"
 	logger "github.com/Metehan1994/final-project/pkg/logging"
 )
@@ -36,4 +38,11 @@ func main() {
 	categoryRepo := category.NewCategoryRepository(DB)
 	categoryRepo.Migration()
 
+	//User Repository
+	userRepo := user.NewUserRepository(DB)
+	userRepo.Migration()
+
+	//Initialize products&categories
+	csvReader.ReadCSVforProducts("./pkg/csv/files/products.csv", categoryRepo, productRepo)
+	csvReader.ReadCSVforUsers("./pkg/csv/files/users.csv", userRepo)
 }

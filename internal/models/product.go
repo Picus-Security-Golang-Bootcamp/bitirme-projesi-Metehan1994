@@ -9,8 +9,8 @@ type Product struct {
 	Name       string `gorm:"unique"`
 	Price      int
 	Quantity   int
-	StockCode  int
-	CategoryID int
+	StockCode  string
+	CategoryID uint
 	Category   Category `gorm:"OnDelete:SET NULL"`
 }
 
