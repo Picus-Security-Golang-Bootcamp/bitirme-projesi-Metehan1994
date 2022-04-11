@@ -11,6 +11,7 @@ import (
 	"github.com/Metehan1994/final-project/internal/user"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 //ReadCSV reads csv and returns products and categories
@@ -59,7 +60,6 @@ func ReadCSVforUsers(filename string, userRepo *user.UserRepository) {
 		user.LastName = line[1]
 		user.Username = line[2]
 		user.Email = line[3]
-		user.Password = line[4]
 		user.IsAdmin, _ = strconv.ParseBool(line[5])
 
 		DBUser := userRepo.GetUserByEmail(user.Email)
@@ -68,6 +68,9 @@ func ReadCSVforUsers(filename string, userRepo *user.UserRepository) {
 		} else {
 			user.ID = uuid.New()
 		}
+		password, _ := bcrypt.GenerateFromPassword([]byte(line[4]), bcrypt.DefaultCost)
+		user.Password = string(password)
+
 		//user.ID = uuid.New()
 		userRepo.InsertSampleData(&user)
 	}

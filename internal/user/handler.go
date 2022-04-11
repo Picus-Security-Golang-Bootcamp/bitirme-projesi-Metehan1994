@@ -43,7 +43,8 @@ func (u *userHandler) login(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "user not found", nil)))
 		return
 	}
-	if user.Password != *req.Password {
+	err := ComparePassWithHashed(user.Password, *req.Password)
+	if err != nil {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "password is wrong", nil)))
 		return
 	}
@@ -66,6 +67,10 @@ func (u *userHandler) signUp(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "check your request body", nil)))
 		return
 	}
+	if !ParseEmail(*req.Email) {
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "The email is not in accepted format.", nil)))
+		return
+	}
 	user := u.userRepo.GetUserByEmail(*req.Email)
 	if user.Email != "" {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "The email is available on the system. Use it to connect.", nil)))
@@ -80,6 +85,8 @@ func (u *userHandler) signUp(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "Your password is not compatible with second entry.", nil)))
 		return
 	}
+	password, _ := GenerateHashedPass(*req.Password)
+	*req.Password = password
 	DBUser := signedUpUserToDBUser(&req)
 	user, err := u.userRepo.CreateNewUser(DBUser)
 	if err != nil {
