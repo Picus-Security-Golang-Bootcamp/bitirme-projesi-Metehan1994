@@ -9,6 +9,7 @@ import (
 	"github.com/Metehan1994/final-project/internal/models"
 	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/Metehan1994/final-project/internal/user"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -36,7 +37,6 @@ func ReadCSVforProducts(filename string, categoryRepo *category.CategoryReposito
 		newCategory := categoryRepo.InsertSampleData(&product.Category)
 		product.CategoryID = newCategory.ID
 		productRepo.InsertSampleData(&product)
-
 	}
 }
 
@@ -61,7 +61,14 @@ func ReadCSVforUsers(filename string, userRepo *user.UserRepository) {
 		user.Email = line[3]
 		user.Password = line[4]
 		user.IsAdmin, _ = strconv.ParseBool(line[5])
-		user.IsUser, _ = strconv.ParseBool(line[6])
+
+		DBUser := userRepo.GetUserByEmail(user.Email)
+		if user.Email == DBUser.Email {
+			user.ID = DBUser.ID
+		} else {
+			user.ID = uuid.New()
+		}
+		//user.ID = uuid.New()
 		userRepo.InsertSampleData(&user)
 	}
 }

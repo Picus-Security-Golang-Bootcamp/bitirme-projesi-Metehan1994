@@ -1,5 +1,5 @@
-First_Name,Last_Name,Username,Email,Password,isAdmin,isUser
-Metehan,Erdogan,metehan1994,metehan-erdogan@hotmail.com,mete345,t,t
-Gurcan,Erdogan,gurcan1971,gurcan-erdogan@hotmail.com,gurcan678,f,t
-Umur,Gerenli,umur1994,umur-gerenli@gmail.com,umur123,t,f
-Ayhan,Erdogan,ayhan1967,ayhan-erdogan@gmail.com,ayhan789,f,t
+First_Name,Last_Name,Username,Email,Password,isAdmin
+Metehan,Erdogan,metehan1994,metehan-erdogan@hotmail.com,mete3458,t
+Gurcan,Erdogan,gurcan1971,gurcan-erdogan@hotmail.com,gurcan678,f
+Umur,Gerenli,umur1994,umur-gerenli@gmail.com,umur1238,t
+Ayhan,Erdogan,ayhan1967,ayhan-erdogan@gmail.com,ayhan789,f

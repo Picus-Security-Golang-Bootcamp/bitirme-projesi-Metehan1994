@@ -1,16 +1,19 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
-	FirstName string `gorm:"unique"`
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
+	FirstName string
 	LastName  string
 	Username  string
-	Email     string
+	Email     string `json:"email" gorm:"unique"`
 	Password  string
 	IsAdmin   bool
-	IsUser    bool
 }
 
 func (User) TableName() string {

@@ -1,0 +1,156 @@
+swagger: "2.0"
+info:
+  description: "This is a sample basket service server by Metehan Erdogan."
+  version: "1.0.0"
+  title: "Basket Service"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "metehan-erdogan@hotmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+basePath: "/api/v1/basket-service-api"
+tags:
+  - name: "user"
+    description: "Everything about Users"
+
+schemes:
+  - "https"
+  - "http"
+paths:
+  /user:
+    post:
+      tags:
+        - "user"
+      summary: "Create user"
+      description: "This can only be done by the logged in user."
+      operationId: "createUser"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Created user object"
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        default:
+          description: "successful operation"
+  /user/login:
+    get:
+      tags:
+        - "user"
+      summary: "Logs user into the system"
+      description: ""
+      operationId: "loginUser"
+      produces:
+        - "application/xml"
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Author object that needs to be added to the store"
+          required: true
+          schema:
+            $ref: "#/definitions/Login"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "string"
+          headers:
+            X-Rate-Limit:
+              type: "integer"
+              format: "int32"
+              description: "calls per hour allowed by the user"
+            X-Expires-After:
+              type: "string"
+              format: "date-time"
+              description: "date in UTC when token expires"
+        "400":
+          description: "Invalid username/password supplied"
+  /user/logout:
+    get:
+      tags:
+        - "user"
+      summary: "Logs out current logged in user session"
+      description: ""
+      operationId: "logoutUser"
+      produces:
+        - "application/xml"
+        - "application/json"
+      parameters: [ ]
+      responses:
+        default:
+          description: "successful operation"
+definitions:
+  User:
+    type: "object"
+    required:
+      - "username"
+      - "email"
+      - "password"
+    properties:
+      id:
+        type: string
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      username:
+        type: "string"
+      email:
+        type: "string"
+      password:
+        type: "string"
+      isAdmin:
+        type: "boolean"
+  Login:
+    type: "object"
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: "string"
+      password:
+        type: "string"
+        minLength: 6
+        maxLength: 30
+  SignUp:
+    type: "object"
+    required:
+      - email
+      - password
+      - firstName
+      - lastName
+      - username
+      - passwordConfirm
+    properties:
+      email:
+        type: "string"
+      password:
+        type: "string"
+        minLength: 6
+        maxLength: 30
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      username:
+        type: "string"
+      passwordConfirm:
+        type: "string"
+        minLength: 6
+        maxLength: 30
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+      message:
+        type: "string"
+      details:
+        description: a (key, value) map.
+        type: object
