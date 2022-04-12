@@ -12,8 +12,9 @@ func CategoryToResponse(c *models.Category) *api.Category {
 		products = append(products, product.ProductToResponse(&prod))
 	}
 
+	name := c.Name
 	return &api.Category{
-		Name:        &c.Name,
+		Name:        &name,
 		Description: c.Description,
 		Products:    products,
 	}

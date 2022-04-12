@@ -15,7 +15,7 @@ func NewCategoryRepository(db *gorm.DB) *CategoryRepository {
 }
 
 func (c *CategoryRepository) createCategory(category *models.Category) (*models.Category, error) {
-	zap.L().Debug("author.repo.create", zap.Reflect("authorBody", category))
+	zap.L().Debug("author.repo.create", zap.Reflect("categoryBody", category))
 	if err := c.db.Create(category).Error; err != nil {
 		zap.L().Error("author.repo.Create failed to create category", zap.Error(err))
 		return nil, err

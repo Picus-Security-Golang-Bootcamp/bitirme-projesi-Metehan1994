@@ -1,27 +1,32 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type Cart struct {
 	gorm.Model
-	CartStatus int `gorm:"default:0"`
+	ID         uuid.UUID `gorm:"type:uuid;primaryKey"`
+	CartStatus int       `gorm:"default:0"`
 
-	CartItems []CartItem `gorm:"foreignKey:CartID"`
+	CartItems []CartItem
 
-	User           User `gorm:"foreignKey:UserID:"`
-	UserID         int
+	User           User `gorm:"foreignKey:UserID"`
+	UserID         uuid.UUID
 	CartItemsCount int `gorm:"-"`
 	TotalPrice     int
 }
 
 type CartItem struct {
 	gorm.Model
-	Cart   Cart
-	CartID uint `gorm:"not null"`
+	Cart   Cart      `gorm:"foreignKey:CartID;references:ID"`
+	CartID uuid.UUID `gorm:"not null"`
 
 	Product   Product `gorm:"foreignkey:ProductID"`
 	ProductID uint    `gorm:"not null"`
-	Amount    int     //`gorm:"not null"`
+	Price     int     `gorm:"not null"`
+	Amount    int     `gorm:"not null"`
 }
 
 func (cart *Cart) GetCartStatusAsString() string {

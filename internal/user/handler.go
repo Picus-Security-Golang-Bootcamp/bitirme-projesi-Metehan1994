@@ -30,9 +30,13 @@ func NewUserHandler(r *gin.RouterGroup, cfg *config.Config, userRepo *UserReposi
 	}
 	r.POST("/login", uHandler.login)
 	r.POST("/signup", uHandler.signUp)
+	r.Use(mw.TokenExpControlMiddleware(cfg.JWTConfig.SecretKey))
+	//r.POST("/AddToCart", uHandler.AddToCart)
+
 	r.Use(mw.AuthMiddleware(cfg.JWTConfig.SecretKey))
 	r.POST("/admin/addBulkCategory", uHandler.addBulkCategory)
 	r.POST("/decode", uHandler.VerifyToken)
+	r.POST("/admin/deleteProduct", uHandler.deleteProduct)
 
 }
 
@@ -130,4 +134,8 @@ func (u *userHandler) VerifyToken(c *gin.Context) {
 	token := c.GetHeader("Authorization")
 	decodedClaims := jwtHelper.VerifyToken(token, u.cfg.JWTConfig.SecretKey)
 	c.JSON(http.StatusOK, decodedClaims)
+}
+
+func (u *userHandler) deleteProduct(c *gin.Context) {
+
 }

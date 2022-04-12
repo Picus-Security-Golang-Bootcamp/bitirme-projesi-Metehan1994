@@ -7,11 +7,13 @@ import (
 
 func ProductToResponse(p *models.Product) *api.Product {
 	price := int64(p.Price)
+	name := p.Name
+	stockCode := p.StockCode
 	return &api.Product{
-		Name:        &p.Name,
+		Name:        &name,
 		Description: p.Description,
 		Price:       &price,
 		Quantity:    int64(p.Quantity),
-		StockCode:   &p.StockCode,
+		StockCode:   &stockCode,
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Metehan1994/final-project/internal/cart"
 	"github.com/Metehan1994/final-project/internal/category"
 	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/Metehan1994/final-project/internal/user"
@@ -76,6 +77,10 @@ func main() {
 	userRepo := user.NewUserRepository(DB)
 	userRepo.Migration()
 	user.NewUserHandler(authRooter, cfg, userRepo, categoryRepo)
+
+	//Cart Repository
+	cartRepo := cart.NewCartRepository(DB)
+	cartRepo.Migration()
 
 	//Initialize products&categories&users
 	csvReader.ReadCSVforProducts("./pkg/csv/files/products.csv", categoryRepo, productRepo)
