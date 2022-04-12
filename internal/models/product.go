@@ -10,7 +10,7 @@ type Product struct {
 	Description string
 	Price       int
 	Quantity    int
-	StockCode   string
+	Sku         string
 	CategoryID  uint
 	Category    Category `gorm:"OnDelete:SET NULL"`
 }

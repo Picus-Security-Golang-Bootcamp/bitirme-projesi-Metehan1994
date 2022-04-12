@@ -20,7 +20,7 @@ import (
 type Product struct {
 
 	// category
-	Category *Category `json:"category,omitempty"`
+	Category *CategoryWithoutRequiredName `json:"category,omitempty"`
 
 	// description
 	Description string `json:"description,omitempty"`
@@ -33,15 +33,14 @@ type Product struct {
 	Name *string `json:"name"`
 
 	// price
-	// Required: true
-	Price *int64 `json:"price"`
+	Price int64 `json:"price,omitempty"`
 
 	// quantity
 	Quantity int64 `json:"quantity,omitempty"`
 
-	// stock code
+	// sku
 	// Required: true
-	StockCode *string `json:"stockCode"`
+	Sku *string `json:"sku"`
 }
 
 // Validate validates this product
@@ -56,11 +55,7 @@ func (m *Product) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePrice(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateStockCode(formats); err != nil {
+	if err := m.validateSku(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -98,18 +93,9 @@ func (m *Product) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Product) validatePrice(formats strfmt.Registry) error {
+func (m *Product) validateSku(formats strfmt.Registry) error {
 
-	if err := validate.Required("price", "body", m.Price); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Product) validateStockCode(formats strfmt.Registry) error {
-
-	if err := validate.Required("stockCode", "body", m.StockCode); err != nil {
+	if err := validate.Required("sku", "body", m.Sku); err != nil {
 		return err
 	}
 

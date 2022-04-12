@@ -33,7 +33,7 @@ func ReadCSVforProducts(filename string, categoryRepo *category.CategoryReposito
 		product.Description = line[1]
 		product.Price, _ = strconv.Atoi(line[2])
 		product.Quantity, _ = strconv.Atoi(line[3])
-		product.StockCode = line[4]
+		product.Sku = line[4]
 		product.Category.Name = line[5]
 		product.Description = line[6]
 		newCategory := categoryRepo.InsertSampleData(&product.Category)

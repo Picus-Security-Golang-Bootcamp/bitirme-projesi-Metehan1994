@@ -76,7 +76,7 @@ func main() {
 	//User Repository
 	userRepo := user.NewUserRepository(DB)
 	userRepo.Migration()
-	user.NewUserHandler(authRooter, cfg, userRepo, categoryRepo)
+	user.NewUserHandler(authRooter, cfg, userRepo, categoryRepo, productRepo)
 
 	//Cart Repository
 	cartRepo := cart.NewCartRepository(DB)

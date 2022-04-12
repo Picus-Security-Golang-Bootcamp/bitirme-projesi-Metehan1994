@@ -29,7 +29,7 @@ func TokenExpControlMiddleware(secretKey string) gin.HandlerFunc {
 			c.Abort()
 			return
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "You are not authorized for shopping!"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "You are not authorized to connect system!"})
 			c.Abort()
 			return
 		}
