@@ -43,13 +43,19 @@ func (u *UserRepository) GetUser(email, password string) (models.User, bool) {
 
 func (u *UserRepository) GetUserByEmail(email string) *models.User {
 	var user models.User
-	u.db.Where("email = ?", email).Find(&user)
+	results := u.db.Where("email = ?", email).Find(&user)
+	if results.Error != nil {
+		zap.L().Error(results.Error.Error())
+	}
 	return &user
 }
 
 func (u *UserRepository) GetUserByUsername(username string) *models.User {
 	var user models.User
-	u.db.Where("username = ?", username).Find(&user)
+	results := u.db.Where("username = ?", username).Find(&user)
+	if results.Error != nil {
+		zap.L().Error(results.Error.Error())
+	}
 	return &user
 }
 

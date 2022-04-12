@@ -21,7 +21,6 @@ func ReadCSVforProducts(filename string, categoryRepo *category.CategoryReposito
 		zap.L().Fatal("Cannot open csv file")
 	}
 	defer f.Close()
-
 	csvReader := csv.NewReader(f)
 	records, err := csvReader.ReadAll()
 	if err != nil {
@@ -31,10 +30,12 @@ func ReadCSVforProducts(filename string, categoryRepo *category.CategoryReposito
 	for _, line := range records[1:] {
 		product := models.Product{}
 		product.Name = line[0]
-		product.Price, _ = strconv.Atoi(line[1])
-		product.Quantity, _ = strconv.Atoi(line[2])
-		product.StockCode = line[3]
-		product.Category.Name = line[4]
+		product.Description = line[1]
+		product.Price, _ = strconv.Atoi(line[2])
+		product.Quantity, _ = strconv.Atoi(line[3])
+		product.StockCode = line[4]
+		product.Category.Name = line[5]
+		product.Description = line[6]
 		newCategory := categoryRepo.InsertSampleData(&product.Category)
 		product.CategoryID = newCategory.ID
 		productRepo.InsertSampleData(&product)

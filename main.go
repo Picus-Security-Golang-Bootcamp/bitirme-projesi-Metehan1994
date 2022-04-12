@@ -36,6 +36,7 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
+	r.MaxMultipartMemory = 8 << 20
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		// your custom format
 		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
@@ -60,6 +61,7 @@ func main() {
 	// Router group
 	rootRouter := r.Group(cfg.ServerConfig.RoutePrefix)
 	authRooter := rootRouter.Group("/user")
+	categoryRouter := rootRouter.Group("/category")
 
 	// Product Repository
 	productRepo := product.NewProductRepository(DB)
@@ -68,13 +70,14 @@ func main() {
 	// Category Repository
 	categoryRepo := category.NewCategoryRepository(DB)
 	categoryRepo.Migration()
+	category.NewCategoryHandler(categoryRouter, categoryRepo)
 
 	//User Repository
 	userRepo := user.NewUserRepository(DB)
 	userRepo.Migration()
-	user.NewUserHandler(authRooter, cfg, userRepo)
+	user.NewUserHandler(authRooter, cfg, userRepo, categoryRepo)
 
-	//Initialize products&categories
+	//Initialize products&categories&users
 	csvReader.ReadCSVforProducts("./pkg/csv/files/products.csv", categoryRepo, productRepo)
 	csvReader.ReadCSVforUsers("./pkg/csv/files/users.csv", userRepo)
 

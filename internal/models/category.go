@@ -6,8 +6,9 @@ import (
 
 type Category struct {
 	gorm.Model
-	Name     string `gorm:"unique"`
-	Products []Product
+	Name        string `gorm:"unique"`
+	Description string
+	Products    []Product
 }
 
 func (Category) TableName() string {

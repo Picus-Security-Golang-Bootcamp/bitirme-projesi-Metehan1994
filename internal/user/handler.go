@@ -6,28 +6,33 @@ import (
 	"time"
 
 	"github.com/Metehan1994/final-project/internal/api"
+	"github.com/Metehan1994/final-project/internal/category"
 	httpErrors "github.com/Metehan1994/final-project/internal/httpErrors"
 	"github.com/Metehan1994/final-project/pkg/config"
 	jwtHelper "github.com/Metehan1994/final-project/pkg/jwt"
+	mw "github.com/Metehan1994/final-project/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"go.uber.org/zap"
 )
 
 type userHandler struct {
-	cfg      *config.Config
-	userRepo *UserRepository
+	cfg          *config.Config
+	userRepo     *UserRepository
+	categoryRepo *category.CategoryRepository
 }
 
-func NewUserHandler(r *gin.RouterGroup, cfg *config.Config, userRepo *UserRepository) {
+func NewUserHandler(r *gin.RouterGroup, cfg *config.Config, userRepo *UserRepository, categoryRepo *category.CategoryRepository) {
 	uHandler := userHandler{
-		cfg:      cfg,
-		userRepo: userRepo,
+		cfg:          cfg,
+		userRepo:     userRepo,
+		categoryRepo: categoryRepo,
 	}
 	r.POST("/login", uHandler.login)
 	r.POST("/signup", uHandler.signUp)
-
-	//r.Use(mw.AuthMiddleware(cfg.ServerConfig.RoutePrefix))
-	//r.POST("/decode", a.VerifyToken)
+	r.Use(mw.AuthMiddleware(cfg.JWTConfig.SecretKey))
+	r.POST("/admin/addBulkCategory", uHandler.addBulkCategory)
+	r.POST("/decode", uHandler.VerifyToken)
 
 }
 
@@ -43,7 +48,7 @@ func (u *userHandler) login(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "user not found", nil)))
 		return
 	}
-	err := ComparePassWithHashed(user.Password, *req.Password)
+	err := ComparePasswordWithHashedOne(user.Password, *req.Password)
 	if err != nil {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "password is wrong", nil)))
 		return
@@ -51,11 +56,11 @@ func (u *userHandler) login(c *gin.Context) {
 	apiUser := userToResponse(user)
 	roles := RoleConvertToStringSlice(apiUser.IsAdmin)
 	jwtClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userId": apiUser.ID,
-		"email":  apiUser.Email,
-		"iat":    time.Now().Unix(),
-		"exp":    time.Now().Add(24 * time.Hour).Unix(),
-		"roles":  roles,
+		"username": apiUser.Username,
+		"email":    apiUser.Email,
+		"iat":      time.Now().Unix(),
+		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+		"roles":    roles,
 	})
 	token := jwtHelper.GenerateToken(jwtClaims, u.cfg.JWTConfig.SecretKey)
 	c.JSON(http.StatusOK, token)
@@ -96,14 +101,29 @@ func (u *userHandler) signUp(c *gin.Context) {
 	apiUser := userToResponse(user)
 	roles := RoleConvertToStringSlice(apiUser.IsAdmin)
 	jwtClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userId": apiUser.ID,
-		"email":  apiUser.Email,
-		"iat":    time.Now().Unix(),
-		"exp":    time.Now().Add(24 * time.Hour).Unix(),
-		"roles":  roles,
+		"username": apiUser.Username,
+		"email":    apiUser.Email,
+		"iat":      time.Now().Unix(),
+		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+		"roles":    roles,
 	})
 	token := jwtHelper.GenerateToken(jwtClaims, u.cfg.JWTConfig.SecretKey)
 	c.JSON(http.StatusOK, token)
+}
+
+func (u *userHandler) addBulkCategory(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "Cannot upload file.", nil)))
+		return
+	}
+	fileDir := "pkg/csv/files/saved/" + file.Filename
+	err = c.SaveUploadedFile(file, fileDir)
+	if err != nil {
+		zap.L().Fatal(err.Error())
+	}
+	c.JSON(http.StatusOK, fmt.Sprintf("'%s' is uploaded!", file.Filename))
+	ReadCSVforCategory(fileDir, u.categoryRepo)
 }
 
 func (u *userHandler) VerifyToken(c *gin.Context) {

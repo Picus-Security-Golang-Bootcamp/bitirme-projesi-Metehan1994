@@ -85,6 +85,47 @@ paths:
         default:
           description: "successful operation"
 definitions:
+  Category:
+    type: "object"
+    required:
+      - "name"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      description:
+        type: "string"
+      products:
+        type: "array"
+        items:
+          $ref: "#/definitions/Product"
+  Product:
+    type: "object"
+    required:
+      - "name"
+      - "stockCode"
+      - "price"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      price:
+        type: "integer"
+        format: "int64"
+      quantity:
+        type: "integer"
+        format: "int64"
+      stockCode:
+        type: "string"
+      description:
+        type: "string"
+      category:
+        type: "object"
+        $ref: "#/definitions/Category"
   User:
     type: "object"
     required:

@@ -40,10 +40,9 @@ func signedUpUserToDBUser(s *api.SignUp) models.User {
 
 func RoleConvertToStringSlice(isAdmin bool) []string {
 	var roles []string
+	roles = append(roles, "customer")
 	if isAdmin {
-		roles = append(roles, "admin", "customer")
-	} else {
-		roles = append(roles, "customer")
+		roles = append(roles, "admin")
 	}
 	return roles
 }
