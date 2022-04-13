@@ -15,6 +15,7 @@ func TokenExpControlMiddleware(secretKey string) gin.HandlerFunc {
 		if c.GetHeader("Authorization") != "" {
 			decodedClaims := jwtHelper.VerifyToken(c.GetHeader("Authorization"), secretKey)
 			if decodedClaims != nil {
+				c.Set("user", decodedClaims)
 				fmt.Println(decodedClaims.Exp)
 				jwtTime := time.Unix(decodedClaims.Exp, 0)
 				timeNow := time.Now()
@@ -25,7 +26,7 @@ func TokenExpControlMiddleware(secretKey string) gin.HandlerFunc {
 					return
 				}
 			}
-			c.JSON(http.StatusForbidden, gin.H{"error": "Your token has expired. You need to login."})
+			c.JSON(http.StatusForbidden, gin.H{"error": "Your token is not available or expired. You need to login."})
 			c.Abort()
 			return
 		} else {

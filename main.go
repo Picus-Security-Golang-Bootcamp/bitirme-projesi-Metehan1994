@@ -62,7 +62,8 @@ func main() {
 	// Router group
 	rootRouter := r.Group(cfg.ServerConfig.RoutePrefix)
 	authRooter := rootRouter.Group("/user")
-	categoryRouter := rootRouter.Group("/category")
+	categoryRooter := rootRouter.Group("/category")
+	cartRooter := rootRouter.Group("/cart")
 
 	// Product Repository
 	productRepo := product.NewProductRepository(DB)
@@ -71,7 +72,7 @@ func main() {
 	// Category Repository
 	categoryRepo := category.NewCategoryRepository(DB)
 	categoryRepo.Migration()
-	category.NewCategoryHandler(categoryRouter, categoryRepo)
+	category.NewCategoryHandler(categoryRooter, categoryRepo)
 
 	//User Repository
 	userRepo := user.NewUserRepository(DB)
@@ -79,8 +80,11 @@ func main() {
 	user.NewUserHandler(authRooter, cfg, userRepo, categoryRepo, productRepo)
 
 	//Cart Repository
-	cartRepo := cart.NewCartRepository(DB)
+	cartItemRepo := cart.NewCartItemRepository(DB)
+	cartRepo := cart.NewCartRepository(DB, cartItemRepo)
 	cartRepo.Migration()
+	cartItemRepo.Migration()
+	cart.NewCartHandler(cartRooter, cfg, cartRepo, productRepo, cartItemRepo, userRepo)
 
 	//Initialize products&categories&users
 	csvReader.ReadCSVforProducts("./pkg/csv/files/products.csv", categoryRepo, productRepo)

@@ -7,30 +7,29 @@ import (
 
 type Cart struct {
 	gorm.Model
-	ID         uuid.UUID `gorm:"type:uuid;primaryKey"`
-	CartStatus int       `gorm:"default:0"`
+	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Status int       `gorm:"default:0"`
 
-	CartItems []CartItem
+	Items []CartItem
 
-	User           User `gorm:"foreignKey:UserID"`
-	UserID         uuid.UUID
-	CartItemsCount int `gorm:"-"`
-	TotalPrice     int
+	User       *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	UserID     uuid.UUID `gorm:"OnDelete:SET NULL"`
+	TotalPrice int
 }
 
 type CartItem struct {
 	gorm.Model
-	Cart   Cart      `gorm:"foreignKey:CartID;references:ID"`
+	Cart   *Cart     `json:"cart,omitempty" gorm:"foreignKey:CartID;references:ID"`
 	CartID uuid.UUID `gorm:"not null"`
 
 	Product   Product `gorm:"foreignkey:ProductID"`
-	ProductID uint    `gorm:"not null"`
+	ProductID uint    `gorm:"OnDelete:SET NULL"`
 	Price     int     `gorm:"not null"`
 	Amount    int     `gorm:"not null"`
 }
 
 func (cart *Cart) GetCartStatusAsString() string {
-	switch cart.CartStatus {
+	switch cart.Status {
 	case 0:
 		return "open"
 	case 1:

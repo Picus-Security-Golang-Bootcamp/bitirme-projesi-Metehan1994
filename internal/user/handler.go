@@ -177,11 +177,6 @@ func (u *userHandler) createProduct(c *gin.Context) {
 func (u *userHandler) updateProduct(c *gin.Context) {
 	idint, _ := strconv.Atoi(c.Param("id"))
 
-	// productBody := &api.Product{ID: int64(idint)}
-	// if err := c.Bind(&productBody); err != nil {
-	// 	c.JSON(httpErrors.ErrorResponse(httpErrors.CannotBindGivenData))
-	// 	return
-	// }
 	productBody2, err := u.productRepo.GetByID(idint)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
@@ -190,11 +185,6 @@ func (u *userHandler) updateProduct(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.CannotBindGivenData))
 		return
 	}
-
-	// if err := productBody.Validate(strfmt.NewFormats()); err != nil {
-	// 	c.JSON(httpErrors.ErrorResponse(err))
-	// 	return
-	// }
 
 	prod, err := u.productRepo.Update(*productBody2)
 	if err != nil {
