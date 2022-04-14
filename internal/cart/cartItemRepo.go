@@ -60,7 +60,7 @@ func (c *CartItemRepository) AddItem(cart *models.Cart, product *models.Product,
 
 //DeleteByID applies a soft delete to a cart item with given ID
 func (c *CartItemRepository) DeleteById(id uint) error {
-	zap.L().Debug("cart.repo.deleteById", zap.Reflect("id", id))
+	zap.L().Debug("cartItem.repo.deleteById", zap.Reflect("id", id))
 	var cartItem models.CartItem
 	result := c.db.First(&cartItem, id)
 	if result.Error != nil {
@@ -73,5 +73,21 @@ func (c *CartItemRepository) DeleteById(id uint) error {
 		return result.Error
 	}
 
+	return nil
+}
+
+func (c *CartItemRepository) UpdateQuantityById(id int, quantity int) error {
+	zap.L().Debug("cartItem.repo.updateQuantityById", zap.Reflect("id", id))
+	var cartItem models.CartItem
+	result := c.db.Preload("Product").First(&cartItem, id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if cartItem.Product.Quantity < quantity {
+		return errors.New("product quantity is not enough to compansate your demand")
+	}
+	cartItem.Amount = quantity
+	cartItem.Price = cartItem.Product.Price * quantity
+	c.UpdateCartItem(&cartItem)
 	return nil
 }

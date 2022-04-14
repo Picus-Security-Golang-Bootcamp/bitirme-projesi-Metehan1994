@@ -68,3 +68,13 @@ func (c *CartRepository) DeleteItemByID(cart *models.Cart, id int) error {
 	c.Update(cart)
 	return nil
 }
+
+// func (c *CartRepository) UpdateQuantityById(id, quantity int) error {
+// 	var cart *models.Cart
+// 	cartItem, err := c.cartItemRepo.UpdateQuantityById(id, quantity)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	c.Update(cart)
+// 	return nil
+// }
