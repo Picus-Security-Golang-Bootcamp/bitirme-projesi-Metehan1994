@@ -1,38 +1,43 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type Order struct {
 	gorm.Model
-	OrderStatus    int `gorm:"default:0"`
-	TrackingNumber string
+	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
+	OrderStatus int       `gorm:"default:0"`
 
-	OrderItems []OrderItem `gorm:"foreignKey:OrderID"`
+	Items []OrderItem `gorm:"foreignKey:OrderID"`
 
-	User            User `gorm:"foreignKey:UserID:"`
-	UserID          int
-	OrderItemsCount int `gorm:"-"`
-	TotalPrice      int `gorm:"-"`
+	CartID uuid.UUID
+	Cart   Cart `gorm:"foreignKey:CartID"`
+
+	User       *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	UserID     uuid.UUID `gorm:"OnDelete:SET NULL"`
+	TotalPrice int
 }
 
 type OrderItem struct {
 	gorm.Model
-	Cart    Cart
-	OrderID uint `gorm:"not null"`
+	Order   *Order    `json:"cart,omitempty" gorm:"foreignKey:OrderID;references:ID"`
+	OrderID uuid.UUID `gorm:"not null"`
 
 	Product   Product `gorm:"foreignkey:ProductID"`
-	ProductID uint    `gorm:"not null"`
-	Amount    int     //`gorm:"not null"`
+	ProductID uint    `gorm:"OnDelete:SET NULL"`
+	Price     int     `gorm:"not null"`
 }
 
 func (order *Order) GetOrderStatusAsString() string {
 	switch order.OrderStatus {
 	case 0:
-		return "proccessed"
+		return "open"
 	case 1:
-		return "delivered"
+		return "completed"
 	case 2:
-		return "shipped"
+		return "canceled"
 	default:
 		return "unknown"
 	}

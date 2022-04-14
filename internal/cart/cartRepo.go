@@ -71,7 +71,7 @@ func (c *CartRepository) DeleteItemByID(cart *models.Cart, id int) error {
 	if !cartItemFound {
 		return errors.New("item not found")
 	}
-	err := c.cartItemRepo.DeleteById(uint(id))
+	cart, err := c.cartItemRepo.DeleteById(cart, uint(id))
 	if err != nil {
 		return err
 	}
@@ -101,5 +101,20 @@ func (c *CartRepository) UpdateQuantityById(cart *models.Cart, id, quantity int)
 	}
 	c.db.Model(&cart).Preload("Items.Product")
 	c.Update(cart)
+	return nil
+}
+
+func (c *CartRepository) DeleteCart(cart *models.Cart) error {
+	zap.L().Debug("cart.repo.deleteById", zap.Reflect("cart", cart))
+	result := c.db.First(&cart, cart.ID)
+	if result.Error != nil {
+		return result.Error
+	} else {
+		fmt.Println("Valid ID, deleted:", cart.ID)
+	}
+	result = c.db.Delete(&models.Cart{}, cart.ID)
+	if result.Error != nil {
+		return result.Error
+	}
 	return nil
 }

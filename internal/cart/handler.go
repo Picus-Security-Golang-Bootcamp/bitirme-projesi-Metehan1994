@@ -54,6 +54,7 @@ func (cHandler *CartHandler) AddToCart(c *gin.Context) {
 	Updatedcart, err := cHandler.cartItemRepo.AddItem(cart, product, quantityint)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
+		return
 	} else {
 		cHandler.Cartrepo.Update(Updatedcart)
 		cartBody := CartToResponse(Updatedcart)

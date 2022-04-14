@@ -8,6 +8,7 @@ import (
 
 	"github.com/Metehan1994/final-project/internal/cart"
 	"github.com/Metehan1994/final-project/internal/category"
+	"github.com/Metehan1994/final-project/internal/order"
 	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/Metehan1994/final-project/internal/user"
 	"github.com/Metehan1994/final-project/pkg/config"
@@ -64,6 +65,7 @@ func main() {
 	authRooter := rootRouter.Group("/user")
 	categoryRooter := rootRouter.Group("/category")
 	cartRooter := rootRouter.Group("/cart")
+	orderRooter := rootRouter.Group("/order")
 
 	// Product Repository
 	productRepo := product.NewProductRepository(DB)
@@ -85,6 +87,13 @@ func main() {
 	cartRepo.Migration()
 	cartItemRepo.Migration()
 	cart.NewCartHandler(cartRooter, cfg, cartRepo, productRepo, cartItemRepo, userRepo)
+
+	//Order Repository
+	orderItemRepo := order.NewOrderItemRepository(DB)
+	orderRepo := order.NewOrderRepository(DB, orderItemRepo)
+	orderRepo.Migration()
+	orderItemRepo.Migration()
+	order.NewOrderHandler(orderRooter, cfg, orderRepo, productRepo, orderItemRepo, userRepo, cartRepo)
 
 	//Initialize products&categories&users
 	csvReader.ReadCSVforProducts("./pkg/csv/files/products.csv", categoryRepo, productRepo)

@@ -2,6 +2,7 @@ package cart
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/Metehan1994/final-project/internal/models"
 	"go.uber.org/zap"
@@ -99,14 +100,21 @@ func (c *CartItemRepository) AddItem(cart *models.Cart, product *models.Product,
 }
 
 //DeleteByID applies a soft delete to a cart item with given ID
-func (c *CartItemRepository) DeleteById(id uint) error {
+func (c *CartItemRepository) DeleteById(cart *models.Cart, id uint) (*models.Cart, error) {
 	zap.L().Debug("cartItem.repo.deleteById", zap.Reflect("id", id))
-	result := c.db.Delete(&models.CartItem{}, id)
+	var cartItem models.CartItem
+	result := c.db.First(&cartItem, id)
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
+	} else {
+		fmt.Println("Valid ID, deleted:", id)
+		cart.TotalPrice -= cartItem.Price
 	}
-
-	return nil
+	result = c.db.Delete(&models.CartItem{}, id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return cart, nil
 }
 
 func (c *CartItemRepository) UpdateQuantityById(cart *models.Cart, id int, quantity int) (*models.Cart, error) {
