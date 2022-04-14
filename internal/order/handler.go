@@ -35,7 +35,7 @@ func NewOrderHandler(r *gin.RouterGroup, cfg *config.Config, orderRepo *OrderRep
 	r.Use(mw.TokenExpControlMiddleware(cfg.JWTConfig.SecretKey))
 	r.POST("/completeOrder", order.CompleteOrder)
 	r.GET("/listOrder", order.ListOrder)
-	r.PUT("/cancelOrder", order.ListOrder)
+	r.PUT("/cancelOrder/orderId/:id", order.CancelOrder)
 }
 
 func (o *OrderHandler) CompleteOrder(c *gin.Context) {
@@ -72,4 +72,19 @@ func (o *OrderHandler) ListOrder(c *gin.Context) {
 	}
 	ordersBody := OrderListToResponse(orderList)
 	c.JSON(http.StatusOK, ordersBody)
+}
+
+func (o *OrderHandler) CancelOrder(c *gin.Context) {
+	user := c.MustGet("user").(*jwt_helper.DecodedToken)
+	userDB := o.userRepo.GetUserByEmail(user.Email)
+
+	idString := (c.Param("id"))
+	order, err := o.orderRepo.CancelOrder(userDB.ID, idString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, "order canceled")
+	orderBody := OrderToResponse(order)
+	c.JSON(http.StatusAccepted, orderBody)
 }
