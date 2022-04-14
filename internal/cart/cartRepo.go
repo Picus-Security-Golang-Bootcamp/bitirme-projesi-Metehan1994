@@ -61,7 +61,7 @@ func (c *CartRepository) List() models.Cart {
 }
 
 func (c *CartRepository) DeleteItemByID(cart *models.Cart, id int) error {
-	err := c.cartItemRepo.DeleteById(uint(id))
+	cart, err := c.cartItemRepo.DeleteById(cart, uint(id))
 	if err != nil {
 		return err
 	}
@@ -69,12 +69,12 @@ func (c *CartRepository) DeleteItemByID(cart *models.Cart, id int) error {
 	return nil
 }
 
-// func (c *CartRepository) UpdateQuantityById(id, quantity int) error {
-// 	var cart *models.Cart
-// 	cartItem, err := c.cartItemRepo.UpdateQuantityById(id, quantity)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	c.Update(cart)
-// 	return nil
-// }
+func (c *CartRepository) UpdateQuantityById(cart *models.Cart, id, quantity int) error {
+	cart, err := c.cartItemRepo.UpdateQuantityById(cart, id, quantity)
+	if err != nil {
+		return err
+	}
+	c.db.Model(&cart).Preload("Items.Product")
+	c.Update(cart)
+	return nil
+}

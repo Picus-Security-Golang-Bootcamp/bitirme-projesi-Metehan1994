@@ -40,9 +40,9 @@ func (c *CartItemRepository) CreateCartItem(cartItem *models.CartItem) {
 
 func (c *CartItemRepository) AddItem(cart *models.Cart, product *models.Product, quantity int) (*models.Cart, error) {
 	cartItem := c.GetItemByProductID(int(product.ID))
-	if cartItem.ProductID != 0 {
-		return cart, errors.New("the product is already available in the basket. Please update its quantity")
-	} else {
+	var cartItem2 models.CartItem
+	c.db.Unscoped().Where("product_id=?", product.ID).Find(&cartItem2)
+	if cartItem.ProductID == 0 && cartItem2.ProductID == 0 {
 		if product.Quantity < quantity {
 			return cart, errors.New("product amount is not enough to compensate your demand")
 		}
@@ -54,40 +54,58 @@ func (c *CartItemRepository) AddItem(cart *models.Cart, product *models.Product,
 		c.CreateCartItem(cartItem)
 		cart.Items = append(cart.Items, *cartItem)
 		cart.TotalPrice += quantity * product.Price
+		return cart, nil
+	} else if cartItem.ProductID == 0 && cartItem2.ProductID != 0 {
+		if product.Quantity < quantity {
+			return cart, errors.New("product amount is not enough to compensate your demand")
+		}
+		cartItem.ProductID = product.ID
+		cartItem.Product = *product
+		cartItem.Price = product.Price * quantity
+		cartItem.Amount = quantity
+		cartItem.CartID = cart.ID
+		c.db.Unscoped().Preload("Cart").Create(cartItem)
+		cart.Items = append(cart.Items, *cartItem)
+		cart.TotalPrice += quantity * product.Price
+		return cart, nil
+	} else {
+		return cart, errors.New("the product is already available in the basket. Please update its quantity")
 	}
-	return cart, nil
 }
 
 //DeleteByID applies a soft delete to a cart item with given ID
-func (c *CartItemRepository) DeleteById(id uint) error {
+func (c *CartItemRepository) DeleteById(cart *models.Cart, id uint) (*models.Cart, error) {
 	zap.L().Debug("cartItem.repo.deleteById", zap.Reflect("id", id))
 	var cartItem models.CartItem
 	result := c.db.First(&cartItem, id)
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	} else {
 		fmt.Println("Valid ID, deleted:", id)
+		cart.TotalPrice -= cartItem.Price
 	}
 	result = c.db.Delete(&models.CartItem{}, id)
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 
-	return nil
+	return cart, nil
 }
 
-func (c *CartItemRepository) UpdateQuantityById(id int, quantity int) error {
+func (c *CartItemRepository) UpdateQuantityById(cart *models.Cart, id int, quantity int) (*models.Cart, error) {
 	zap.L().Debug("cartItem.repo.updateQuantityById", zap.Reflect("id", id))
 	var cartItem models.CartItem
 	result := c.db.Preload("Product").First(&cartItem, id)
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 	if cartItem.Product.Quantity < quantity {
-		return errors.New("product quantity is not enough to compansate your demand")
+		return nil, errors.New("product quantity is not enough to compansate your demand")
 	}
 	cartItem.Amount = quantity
+	cart.TotalPrice -= cartItem.Price
 	cartItem.Price = cartItem.Product.Price * quantity
+	cart.TotalPrice += cartItem.Price
 	c.UpdateCartItem(&cartItem)
-	return nil
+	return cart, nil
 }
