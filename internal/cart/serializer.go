@@ -23,6 +23,7 @@ func CartToResponse(p *models.Cart) *api.Cart {
 func CartItemToResponse(p *models.CartItem) *api.CartItem {
 	return &api.CartItem{
 		ProductName: p.Product.Name,
+		ProductID:   int64(p.ProductID),
 		ID:          int64(p.ID),
 		Amount:      int64(p.Amount),
 		Price:       int64(p.Price),

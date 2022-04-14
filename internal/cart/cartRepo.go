@@ -1,6 +1,7 @@
 package cart
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Metehan1994/final-project/internal/models"
@@ -24,8 +25,8 @@ func (c *CartRepository) Migration() {
 
 func (c *CartRepository) GetCartByUserID(UserID uuid.UUID) *models.Cart {
 	var cart models.Cart
-	cart.UserID = UserID
-	c.db.Preload("Items.Product").Find(&cart)
+	//cart.UserID = UserID
+	c.db.Preload("Items.Product").Where("user_id=?", UserID).Find(&cart)
 	return &cart
 }
 
@@ -48,7 +49,7 @@ func (c *CartRepository) GetOrCreateCart(userID uuid.UUID) (*models.Cart, string
 }
 
 func (c *CartRepository) Update(cart *models.Cart) {
-	result := c.db.Preload("Items.Product").Save(&cart)
+	result := c.db.Preload("Items.Product").Where("id=?", cart.ID).Save(&cart)
 	if result.Error != nil {
 		zap.L().Fatal(result.Error.Error())
 	}
@@ -56,20 +57,44 @@ func (c *CartRepository) Update(cart *models.Cart) {
 
 func (c *CartRepository) List() models.Cart {
 	var cart models.Cart
-	c.db.Preload("Items.Product").Find(&cart)
+	c.db.Preload("Items.Product").Where("user_id=?").Find(&cart)
 	return cart
 }
 
 func (c *CartRepository) DeleteItemByID(cart *models.Cart, id int) error {
-	cart, err := c.cartItemRepo.DeleteById(cart, uint(id))
+	var cartItemFound bool = false
+	for _, item := range cart.Items {
+		if item.ID == uint(id) {
+			cartItemFound = true
+		}
+	}
+	if !cartItemFound {
+		return errors.New("item not found")
+	}
+	err := c.cartItemRepo.DeleteById(uint(id))
 	if err != nil {
 		return err
 	}
 	c.Update(cart)
 	return nil
+	// cart, err := c.cartItemRepo.DeleteById(cart, uint(id))
+	// if err != nil {
+	// 	return err
+	// }
+	// c.Update(cart)
+	// return nil
 }
 
 func (c *CartRepository) UpdateQuantityById(cart *models.Cart, id, quantity int) error {
+	var cartItemFound bool = false
+	for _, item := range cart.Items {
+		if item.ID == uint(id) {
+			cartItemFound = true
+		}
+	}
+	if !cartItemFound {
+		return errors.New("item not found")
+	}
 	cart, err := c.cartItemRepo.UpdateQuantityById(cart, id, quantity)
 	if err != nil {
 		return err

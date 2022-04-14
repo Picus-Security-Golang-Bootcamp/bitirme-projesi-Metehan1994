@@ -159,6 +159,9 @@ definitions:
       id:
         type: "integer"
         format: "int64"
+      productId:
+        type: "integer"
+        format: "int64"
       amount:
         type: "integer"
         format: "int64"

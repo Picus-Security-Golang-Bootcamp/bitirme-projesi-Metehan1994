@@ -28,6 +28,9 @@ type CartItem struct {
 
 	// price
 	Price int64 `json:"price,omitempty"`
+
+	// product Id
+	ProductID int64 `json:"productId,omitempty"`
 }
 
 // Validate validates this cart item

@@ -1,6 +1,8 @@
 package user
 
 import (
+	"fmt"
+
 	"github.com/Metehan1994/final-project/internal/models"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -44,6 +46,17 @@ func (u *UserRepository) GetUser(email, password string) (models.User, bool) {
 func (u *UserRepository) GetUserByEmail(email string) *models.User {
 	var user models.User
 	results := u.db.Where("email = ?", email).Find(&user)
+	if results.Error != nil {
+		zap.L().Error(results.Error.Error())
+	}
+	return &user
+}
+
+func (u *UserRepository) GetUserByID(Id string) *models.User {
+	//uuid, _ := uuid.FromBytes([]byte(Id))
+	fmt.Println(Id)
+	var user models.User
+	results := u.db.Where("id = ?", Id).Find(&user)
 	if results.Error != nil {
 		zap.L().Error(results.Error.Error())
 	}

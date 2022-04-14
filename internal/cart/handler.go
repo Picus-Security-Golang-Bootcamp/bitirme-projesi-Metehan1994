@@ -40,6 +40,7 @@ func NewCartHandler(r *gin.RouterGroup, cfg *config.Config, Cartrepo *CartReposi
 func (cHandler *CartHandler) AddToCart(c *gin.Context) {
 	user := c.MustGet("user").(*jwt_helper.DecodedToken)
 	userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	//userDB := cHandler.userRepo.GetUserByID(user.UserID)
 
 	cart, Info := cHandler.Cartrepo.GetOrCreateCart(userDB.ID)
 	c.JSON(http.StatusOK, Info)

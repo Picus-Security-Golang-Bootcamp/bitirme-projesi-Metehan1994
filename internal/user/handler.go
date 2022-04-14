@@ -70,6 +70,7 @@ func (u *userHandler) login(c *gin.Context) {
 	jwtClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": apiUser.Username,
 		"email":    apiUser.Email,
+		"userId":   apiUser.ID,
 		"iat":      time.Now().Unix(),
 		"exp":      time.Now().Add(24 * time.Hour).Unix(),
 		"roles":    roles,
@@ -115,6 +116,7 @@ func (u *userHandler) signUp(c *gin.Context) {
 	jwtClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": apiUser.Username,
 		"email":    apiUser.Email,
+		"userId":   apiUser.ID,
 		"iat":      time.Now().Unix(),
 		"exp":      time.Now().Add(24 * time.Hour).Unix(),
 		"roles":    roles,

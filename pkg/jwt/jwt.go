@@ -10,6 +10,7 @@ type DecodedToken struct {
 	Iat      int64    `json:"iat"`
 	Roles    []string `json:"roles"`
 	Username string   `json:"username"`
+	UserID   string   `json:"userId"`
 	Email    string   `json:"email"`
 	Exp      int64    `json:"exp"`
 }
