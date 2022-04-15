@@ -2,9 +2,11 @@ package order
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Metehan1994/final-project/internal/models"
+	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -12,10 +14,11 @@ import (
 type OrderRepository struct {
 	db            *gorm.DB
 	orderItemRepo *OrderItemRepository
+	productRepo   *product.ProductRepository
 }
 
-func NewOrderRepository(db *gorm.DB, orderItemRepo *OrderItemRepository) *OrderRepository {
-	return &OrderRepository{db: db, orderItemRepo: orderItemRepo}
+func NewOrderRepository(db *gorm.DB, orderItemRepo *OrderItemRepository, productRepo *product.ProductRepository) *OrderRepository {
+	return &OrderRepository{db: db, orderItemRepo: orderItemRepo, productRepo: productRepo}
 }
 
 func (o *OrderRepository) Migration() {
@@ -32,7 +35,7 @@ func (o *OrderRepository) CompleteOrder(cart *models.Cart) (*models.Order, error
 		OrderStatus: 1,
 		TotalPrice:  cart.TotalPrice,
 	}
-	result := o.db.Create(order)
+	result := tx.Create(order)
 	if result.Error != nil {
 		tx.Rollback()
 		return nil, result.Error
@@ -42,11 +45,17 @@ func (o *OrderRepository) CompleteOrder(cart *models.Cart) (*models.Order, error
 			OrderID:   order.ID,
 			ProductID: item.ProductID,
 			Price:     item.Price,
+			Amount:    item.Amount,
 		}
-		result := o.db.Create(orderItem)
+		result := tx.Create(orderItem)
 		if result.Error != nil {
 			tx.Rollback()
 			return nil, result.Error
+		}
+		err := o.productRepo.UpdateProductQuantityAfterSale(&item)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
 		}
 	}
 	tx.Commit()
@@ -94,6 +103,13 @@ func (o *OrderRepository) CancelOrder(userID uuid.UUID, id string) (*models.Orde
 		result := o.db.Where("id=?", order.ID).Save(&order)
 		if result.Error != nil {
 			return nil, result.Error
+		}
+	}
+	for _, item := range order.Items {
+		fmt.Println(item.Product) //Productı buluyor.
+		err := o.productRepo.UpdateProductQuantityAfterCancel(&item)
+		if err != nil {
+			return nil, err
 		}
 	}
 	return order, nil

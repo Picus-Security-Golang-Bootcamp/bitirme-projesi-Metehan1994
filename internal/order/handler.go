@@ -40,10 +40,15 @@ func NewOrderHandler(r *gin.RouterGroup, cfg *config.Config, orderRepo *OrderRep
 
 func (o *OrderHandler) CompleteOrder(c *gin.Context) {
 	user := c.MustGet("user").(*jwt_helper.DecodedToken)
-	userDB := o.userRepo.GetUserByEmail(user.Email)
+	//userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	userDB, err := o.userRepo.GetUserByID(user.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	cart := o.cartRepo.GetCartByUserID(userDB.ID)
 	if cart.ID == uuid.Nil {
-		c.JSON(http.StatusBadRequest, "no avaiable cart")
+		c.JSON(http.StatusNotFound, "no available cart")
 		return
 	}
 	order, err := o.orderRepo.CompleteOrder(cart)
@@ -63,7 +68,12 @@ func (o *OrderHandler) CompleteOrder(c *gin.Context) {
 
 func (o *OrderHandler) ListOrder(c *gin.Context) {
 	user := c.MustGet("user").(*jwt_helper.DecodedToken)
-	userDB := o.userRepo.GetUserByEmail(user.Email)
+	//userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	userDB, err := o.userRepo.GetUserByID(user.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
 	orderList, err := o.orderRepo.GetOrdersByUserID(userDB.ID)
 	if err != nil {
@@ -76,7 +86,12 @@ func (o *OrderHandler) ListOrder(c *gin.Context) {
 
 func (o *OrderHandler) CancelOrder(c *gin.Context) {
 	user := c.MustGet("user").(*jwt_helper.DecodedToken)
-	userDB := o.userRepo.GetUserByEmail(user.Email)
+	//userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	userDB, err := o.userRepo.GetUserByID(user.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
 	idString := (c.Param("id"))
 	order, err := o.orderRepo.CancelOrder(userDB.ID, idString)

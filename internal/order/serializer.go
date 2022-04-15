@@ -34,5 +34,6 @@ func OrderItemToResponse(p *models.OrderItem) *api.OrderItem {
 		ProductID:   int64(p.ProductID),
 		ID:          int64(p.ID),
 		Price:       int64(p.Price),
+		Amount:      int64(p.Amount),
 	}
 }

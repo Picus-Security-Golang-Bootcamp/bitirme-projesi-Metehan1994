@@ -48,6 +48,9 @@ func (c *CartItemRepository) AddItem(cart *models.Cart, product *models.Product,
 	if foundCart {
 		return cart, errors.New("the product is already available in the basket. Please update its quantity")
 	} else {
+		if product.Quantity < quantity {
+			return nil, errors.New("product quantity is not enough to compansate your demand")
+		}
 		cartItem := models.CartItem{
 			ProductID: product.ID,
 			Product:   *product,

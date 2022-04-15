@@ -197,6 +197,9 @@ definitions:
       productId:
         type: "integer"
         format: "int64"
+      amount:
+        type: "integer"
+        format: "int64"
       price:
         type: "integer"
         format: "int64"

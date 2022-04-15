@@ -1,9 +1,11 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Metehan1994/final-project/internal/models"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -52,15 +54,19 @@ func (u *UserRepository) GetUserByEmail(email string) *models.User {
 	return &user
 }
 
-func (u *UserRepository) GetUserByID(Id string) *models.User {
+func (u *UserRepository) GetUserByID(Id string) (*models.User, error) {
 	//uuid, _ := uuid.FromBytes([]byte(Id))
 	fmt.Println(Id)
 	var user models.User
-	results := u.db.Where("id = ?", Id).Find(&user)
+	userUUID := uuid.MustParse(Id)
+	results := u.db.Where("id = ?", userUUID).Find(&user)
 	if results.Error != nil {
-		zap.L().Error(results.Error.Error())
+		return nil, results.Error
 	}
-	return &user
+	if user.ID == uuid.Nil {
+		return nil, errors.New("user not found. You need to login to the system")
+	}
+	return &user, nil
 }
 
 func (u *UserRepository) GetUserByUsername(username string) *models.User {

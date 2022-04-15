@@ -39,8 +39,12 @@ func NewCartHandler(r *gin.RouterGroup, cfg *config.Config, Cartrepo *CartReposi
 
 func (cHandler *CartHandler) AddToCart(c *gin.Context) {
 	user := c.MustGet("user").(*jwt_helper.DecodedToken)
-	userDB := cHandler.userRepo.GetUserByEmail(user.Email)
-	//userDB := cHandler.userRepo.GetUserByID(user.UserID)
+	//userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	userDB, err := cHandler.userRepo.GetUserByID(user.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
 	cart, Info := cHandler.Cartrepo.GetOrCreateCart(userDB.ID)
 	c.JSON(http.StatusOK, Info)
@@ -64,8 +68,12 @@ func (cHandler *CartHandler) AddToCart(c *gin.Context) {
 
 func (cHandler *CartHandler) ListCartItems(c *gin.Context) {
 	user := c.MustGet("user").(*jwt_helper.DecodedToken)
-	userDB := cHandler.userRepo.GetUserByEmail(user.Email)
-
+	//userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	userDB, err := cHandler.userRepo.GetUserByID(user.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	cart := cHandler.Cartrepo.GetCartByUserID(userDB.ID)
 	cartBody := CartToResponse(cart)
 	c.JSON(http.StatusOK, cartBody)
@@ -73,10 +81,15 @@ func (cHandler *CartHandler) ListCartItems(c *gin.Context) {
 
 func (cHandler *CartHandler) DeleteItem(c *gin.Context) {
 	user := c.MustGet("user").(*jwt_helper.DecodedToken)
-	userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	//userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	userDB, err := cHandler.userRepo.GetUserByID(user.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	cart := cHandler.Cartrepo.GetCartByUserID(userDB.ID)
 	idint, _ := strconv.Atoi(c.Param("itemId"))
-	err := cHandler.Cartrepo.DeleteItemByID(cart, idint)
+	err = cHandler.Cartrepo.DeleteItemByID(cart, idint)
 	//err := cHandler.cartItemRepo.DeleteById(uint(idint))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
@@ -89,9 +102,14 @@ func (cHandler *CartHandler) UpdateQuantity(c *gin.Context) {
 	idint, _ := strconv.Atoi(c.Param("itemId"))
 	quantity, _ := strconv.Atoi(c.Param("quantity"))
 	user := c.MustGet("user").(*jwt_helper.DecodedToken)
-	userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	//userDB := cHandler.userRepo.GetUserByEmail(user.Email)
+	userDB, err := cHandler.userRepo.GetUserByID(user.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	cart := cHandler.Cartrepo.GetCartByUserID(userDB.ID)
-	err := cHandler.Cartrepo.UpdateQuantityById(cart, idint, quantity)
+	err = cHandler.Cartrepo.UpdateQuantityById(cart, idint, quantity)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return

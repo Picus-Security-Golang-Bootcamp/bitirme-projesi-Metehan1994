@@ -20,6 +20,9 @@ type OrderItem struct {
 	// product name
 	ProductName string `json:"ProductName,omitempty"`
 
+	// amount
+	Amount int64 `json:"amount,omitempty"`
+
 	// id
 	ID int64 `json:"id,omitempty"`
 

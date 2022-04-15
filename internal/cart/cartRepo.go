@@ -112,6 +112,12 @@ func (c *CartRepository) DeleteCart(cart *models.Cart) error {
 	} else {
 		fmt.Println("Valid ID, deleted:", cart.ID)
 	}
+	for _, item := range cart.Items {
+		_, err := c.cartItemRepo.DeleteById(cart, item.ID)
+		if err != nil {
+			return err
+		}
+	}
 	result = c.db.Delete(&models.Cart{}, cart.ID)
 	if result.Error != nil {
 		return result.Error

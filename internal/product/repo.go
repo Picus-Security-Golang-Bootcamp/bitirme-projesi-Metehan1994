@@ -78,3 +78,30 @@ func (p *ProductRepository) GetByID(ID int) (*models.Product, error) {
 	}
 	return &product, nil
 }
+
+func (p *ProductRepository) UpdateProductQuantityAfterSale(cartItem *models.CartItem) error {
+	product := &cartItem.Product
+	fmt.Println(product)
+	if product.Quantity < cartItem.Amount {
+		return errors.New("not enough product. Please check product availability from the list once more")
+	}
+	result := p.db.Model(&product).Where("id = ? AND quantity >= ?", product.ID, cartItem.Amount).
+		Update("quantity", gorm.Expr("quantity - ?", cartItem.Amount))
+	if result.Error != nil {
+		return result.Error
+	}
+	fmt.Println(product.Quantity)
+	return nil
+}
+
+func (p *ProductRepository) UpdateProductQuantityAfterCancel(orderItem *models.OrderItem) error {
+	product := &orderItem.Product
+	fmt.Println(product)
+	result := p.db.Model(&product).Where("id = ?", product.ID).
+		Update("quantity", gorm.Expr("quantity + ?", orderItem.Amount))
+	if result.Error != nil {
+		return result.Error
+	}
+	fmt.Println(product.Quantity)
+	return nil
+}

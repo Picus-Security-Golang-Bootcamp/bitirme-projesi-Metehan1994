@@ -28,6 +28,7 @@ type OrderItem struct {
 	Product   Product `gorm:"foreignkey:ProductID"`
 	ProductID uint    `gorm:"OnDelete:SET NULL"`
 	Price     int     `gorm:"not null"`
+	Amount    int     `gorm:"not null"`
 }
 
 func (order *Order) GetOrderStatusAsString() string {

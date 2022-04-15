@@ -90,7 +90,7 @@ func main() {
 
 	//Order Repository
 	orderItemRepo := order.NewOrderItemRepository(DB)
-	orderRepo := order.NewOrderRepository(DB, orderItemRepo)
+	orderRepo := order.NewOrderRepository(DB, orderItemRepo, productRepo)
 	orderRepo.Migration()
 	orderItemRepo.Migration()
 	order.NewOrderHandler(orderRooter, cfg, orderRepo, productRepo, orderItemRepo, userRepo, cartRepo)
