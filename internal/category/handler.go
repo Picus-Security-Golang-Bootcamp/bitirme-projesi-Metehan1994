@@ -3,7 +3,7 @@ package category
 import (
 	"net/http"
 
-	httpErrors "github.com/Metehan1994/final-project/internal/httpErrors"
+	"github.com/Metehan1994/final-project/pkg/pagination"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,10 +18,9 @@ func NewCategoryHandler(r *gin.RouterGroup, Catrepo *CategoryRepository) {
 }
 
 func (cat *CategoryHandler) CategoryList(c *gin.Context) {
-	categories, err := cat.Catrepo.ListCategoriesWithProducts()
-	if err != nil {
-		c.JSON(httpErrors.ErrorResponse(err))
-		return
-	}
-	c.JSON(http.StatusOK, CategoriesToResponse(categories))
+	pageIndex, pageSize := pagination.GetPaginationParametersFromRequest(c)
+	categories, count := cat.Catrepo.ListCategoriesWithProducts(pageIndex, pageSize)
+	paginatedResult := pagination.NewFromGinRequest(c, count)
+	paginatedResult.Items = CategoriesToResponse(categories)
+	c.JSON(http.StatusOK, paginatedResult)
 }

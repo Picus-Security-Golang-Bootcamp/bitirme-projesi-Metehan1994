@@ -106,14 +106,14 @@ func (p *ProductRepository) UpdateProductQuantityAfterCancel(orderItem *models.O
 	return nil
 }
 
-func (p *ProductRepository) ListProductsWithCategories() ([]*models.Product, error) {
-	zap.L().Debug("category.repo.ListCategories")
+func (p *ProductRepository) ListProductsWithCategories(pageIndex, pageSize int) ([]*models.Product, int) {
+	zap.L().Debug("product.repo.ListProducts")
+	var allproducts []*models.Product
+	p.db.Find(&allproducts)
+	count := len(allproducts)
 	var products []*models.Product
-	result := p.db.Preload("Category").Find(&products)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return products, nil
+	p.db.Offset((pageIndex - 1) * pageSize).Limit(pageSize).Preload("Category").Find(&products)
+	return products, count
 }
 
 func (p *ProductRepository) SearchByName(name string) ([]*models.Product, error) {

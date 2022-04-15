@@ -24,14 +24,14 @@ func NewCategoryRepository(db *gorm.DB) *CategoryRepository {
 // 	return category, nil
 // }
 
-func (c *CategoryRepository) ListCategoriesWithProducts() ([]*models.Category, error) {
+func (c *CategoryRepository) ListCategoriesWithProducts(pageIndex, pageSize int) ([]*models.Category, int) {
 	zap.L().Debug("category.repo.ListCategories")
+	var allcategories []*models.Category
+	c.db.Find(&allcategories)
+	count := len(allcategories)
 	var categories []*models.Category
-	result := c.db.Preload("Products").Find(&categories)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return categories, nil
+	c.db.Offset((pageIndex - 1) * pageSize).Limit(pageSize).Preload("Products").Find(&categories)
+	return categories, count
 }
 
 func (c *CategoryRepository) Migration() {
