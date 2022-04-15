@@ -23,5 +23,5 @@ func (cat *CategoryHandler) CategoryList(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(err))
 		return
 	}
-	c.JSON(http.StatusOK, CategoriesToResponse(&categories))
+	c.JSON(http.StatusOK, CategoriesToResponse(categories))
 }

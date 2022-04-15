@@ -105,3 +105,31 @@ func (p *ProductRepository) UpdateProductQuantityAfterCancel(orderItem *models.O
 	fmt.Println(product.Quantity)
 	return nil
 }
+
+func (p *ProductRepository) ListProductsWithCategories() ([]*models.Product, error) {
+	zap.L().Debug("category.repo.ListCategories")
+	var products []*models.Product
+	result := p.db.Preload("Category").Find(&products)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return products, nil
+}
+
+func (p *ProductRepository) SearchByName(name string) ([]*models.Product, error) {
+	var products []*models.Product
+	result := p.db.Preload("Category").Where("name ILIKE ? ", "%"+name+"%").Find(&products)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return products, nil
+}
+
+func (p *ProductRepository) SearchBySku(word string) ([]*models.Product, error) {
+	var products []*models.Product
+	result := p.db.Preload("Category").Where("sku ILIKE ? ", "%"+word+"%").Find(&products)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return products, nil
+}

@@ -37,7 +37,6 @@ func NewUserHandler(r *gin.RouterGroup, cfg *config.Config, userRepo *UserReposi
 	r.POST("/login", uHandler.login)
 	r.POST("/signup", uHandler.signUp)
 	r.Use(mw.TokenExpControlMiddleware(cfg.JWTConfig.SecretKey))
-	//r.POST("/AddToCart", uHandler.AddToCart)
 
 	r.Use(mw.AuthMiddleware(cfg.JWTConfig.SecretKey))
 	r.POST("/admin/addBulkCategory", uHandler.addBulkCategory)

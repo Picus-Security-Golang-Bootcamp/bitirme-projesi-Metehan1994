@@ -20,10 +20,10 @@ func CategoryToResponse(c *models.Category) *api.Category {
 	}
 }
 
-func CategoriesToResponse(c *[]models.Category) []*api.Category {
+func CategoriesToResponse(c []*models.Category) []*api.Category {
 	categories := make([]*api.Category, 0)
-	for _, b := range *c {
-		categories = append(categories, CategoryToResponse(&b))
+	for _, b := range c {
+		categories = append(categories, CategoryToResponse(b))
 	}
 	return categories
 }

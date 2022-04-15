@@ -64,12 +64,14 @@ func main() {
 	rootRouter := r.Group(cfg.ServerConfig.RoutePrefix)
 	authRooter := rootRouter.Group("/user")
 	categoryRooter := rootRouter.Group("/category")
+	productRooter := rootRouter.Group("/product")
 	cartRooter := rootRouter.Group("/cart")
 	orderRooter := rootRouter.Group("/order")
 
 	// Product Repository
 	productRepo := product.NewProductRepository(DB)
 	productRepo.Migration()
+	product.NewProductHandler(productRooter, productRepo)
 
 	// Category Repository
 	categoryRepo := category.NewCategoryRepository(DB)

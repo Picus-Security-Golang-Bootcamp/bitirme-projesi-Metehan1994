@@ -24,6 +24,14 @@ func ProductToResponse(p *models.Product) *api.Product {
 	}
 }
 
+func ProductListToResponse(p []*models.Product) []*api.Product {
+	products := make([]*api.Product, 0)
+	for _, product := range p {
+		products = append(products, ProductToResponse(product))
+	}
+	return products
+}
+
 func ResponseToProduct(apiPro *api.Product) *models.Product {
 	name := *apiPro.Name
 	stockCode := *apiPro.Sku
