@@ -3,8 +3,6 @@ package order
 import (
 	"net/http"
 
-	"github.com/Metehan1994/final-project/internal/cart"
-	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/Metehan1994/final-project/internal/user"
 	"github.com/Metehan1994/final-project/pkg/config"
 	jwt_helper "github.com/Metehan1994/final-project/pkg/jwt"
@@ -14,23 +12,16 @@ import (
 )
 
 type OrderHandler struct {
-	cfg           *config.Config
-	orderRepo     *OrderRepository
-	productRepo   *product.ProductRepository
-	orderItemRepo *OrderItemRepository
-	userRepo      *user.UserRepository
-	cartRepo      *cart.CartRepository
+	cfg          *config.Config
+	userRepo     *user.UserRepository
+	orderService *OrderService
 }
 
-func NewOrderHandler(r *gin.RouterGroup, cfg *config.Config, orderRepo *OrderRepository, productRepo *product.ProductRepository,
-	orderItemRepo *OrderItemRepository, userRepo *user.UserRepository, cartRepo *cart.CartRepository) {
+func NewOrderHandler(r *gin.RouterGroup, cfg *config.Config, userRepo *user.UserRepository, orderService *OrderService) {
 	order := &OrderHandler{
-		orderRepo:     orderRepo,
-		productRepo:   productRepo,
-		orderItemRepo: orderItemRepo,
-		userRepo:      userRepo,
-		cfg:           cfg,
-		cartRepo:      cartRepo,
+		userRepo:     userRepo,
+		cfg:          cfg,
+		orderService: orderService,
 	}
 	r.Use(mw.TokenExpControlMiddleware(cfg.JWTConfig.SecretKey))
 	r.POST("/completeOrder", order.CompleteOrder)
@@ -46,22 +37,22 @@ func (o *OrderHandler) CompleteOrder(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	cart := o.cartRepo.GetCartByUserID(userDB.ID)
+	cart := o.orderService.GetCartByUserID(userDB.ID)
 	if cart.ID == uuid.Nil {
 		c.JSON(http.StatusNotFound, "no available cart")
 		return
 	}
-	order, err := o.orderRepo.CompleteOrder(cart)
+	order, err := o.orderService.CompleteOrder(cart)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	orderWithItems, err := o.orderRepo.OrderGetWithItems(order)
+	orderWithItems, err := o.orderService.OrderGetWithItems(order)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	o.cartRepo.DeleteCart(cart)
+	o.orderService.DeleteCart(cart)
 	orderBody := OrderToResponse(orderWithItems)
 	c.JSON(http.StatusAccepted, orderBody)
 }
@@ -75,7 +66,7 @@ func (o *OrderHandler) ListOrder(c *gin.Context) {
 		return
 	}
 
-	orderList, err := o.orderRepo.GetOrdersByUserID(userDB.ID)
+	orderList, err := o.orderService.GetOrdersByUserID(userDB.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -94,7 +85,7 @@ func (o *OrderHandler) CancelOrder(c *gin.Context) {
 	}
 
 	idString := (c.Param("id"))
-	order, err := o.orderRepo.CancelOrder(userDB.ID, idString)
+	order, err := o.orderService.CancelOrder(userDB.ID, idString)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return

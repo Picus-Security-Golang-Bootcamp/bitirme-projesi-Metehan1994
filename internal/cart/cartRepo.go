@@ -1,7 +1,6 @@
 package cart
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Metehan1994/final-project/internal/models"
@@ -29,27 +28,20 @@ func (c *CartRepository) GetCartByUserID(UserID uuid.UUID) *models.Cart {
 	var cart models.Cart
 	//cart.UserID = UserID
 	c.db.Preload("Items.Product").Where("user_id=?", UserID).Find(&cart)
+	fmt.Println(cart)
 	return &cart
 }
 
 //GerOrCreateCart checks the cart is available or not and creates cart if user does not have a cart
-func (c *CartRepository) GetOrCreateCart(userID uuid.UUID) (*models.Cart, string) {
-	zap.L().Debug("cart.repo.GetOrCreateCart", zap.Reflect("UserID", userID))
-	cart := c.GetCartByUserID(userID)
-	var s string
-	if cart.ID != uuid.Nil {
-		s = "You have already a cart. New item will be added to it."
-		fmt.Println(s)
-	} else {
-		cart.UserID = userID
-		cart.ID = uuid.New()
-		result := c.db.Where("user_id =?", cart.UserID).FirstOrCreate(&cart)
-		if result.Error != nil {
-			zap.L().Fatal(result.Error.Error())
-		}
-		fmt.Println("New cart is created for you.")
+func (c *CartRepository) CreateCart(cart *models.Cart) *models.Cart {
+	zap.L().Debug("cart.repo.GetOrCreateCart", zap.Reflect("cart", cart))
+	cart.ID = uuid.New()
+	result := c.db.Where("user_id =?", cart.UserID).FirstOrCreate(&cart)
+	if result.Error != nil {
+		zap.L().Fatal(result.Error.Error())
 	}
-	return cart, s
+	fmt.Println("New cart is created for you.")
+	return cart
 }
 
 //Update updates the changes done on the cart
@@ -67,53 +59,6 @@ func (c *CartRepository) List() models.Cart {
 	var cart models.Cart
 	c.db.Preload("Items.Product").Where("user_id=?").Find(&cart)
 	return cart
-}
-
-//DeleteItemByID removes the cart Item found in the cart
-func (c *CartRepository) DeleteItemByID(cart *models.Cart, id int) error {
-	zap.L().Debug("cart.repo.DeleteItemByID")
-	var cartItemFound bool = false
-	for _, item := range cart.Items {
-		if item.ID == uint(id) {
-			cartItemFound = true
-		}
-	}
-	if !cartItemFound {
-		return errors.New("item not found")
-	}
-	cart, err := c.cartItemRepo.DeleteById(cart, uint(id))
-	if err != nil {
-		return err
-	}
-	c.Update(cart)
-	return nil
-	// cart, err := c.cartItemRepo.DeleteById(cart, uint(id))
-	// if err != nil {
-	// 	return err
-	// }
-	// c.Update(cart)
-	// return nil
-}
-
-//UpdateQuantityById changes the quantity of item found in the cart
-func (c *CartRepository) UpdateQuantityById(cart *models.Cart, id, quantity int) error {
-	zap.L().Debug("cart.repo.UpdateQuantityById")
-	var cartItemFound bool = false
-	for _, item := range cart.Items {
-		if item.ID == uint(id) {
-			cartItemFound = true
-		}
-	}
-	if !cartItemFound {
-		return errors.New("item not found")
-	}
-	cart, err := c.cartItemRepo.UpdateQuantityById(cart, id, quantity)
-	if err != nil {
-		return err
-	}
-	c.db.Model(&cart).Preload("Items.Product")
-	c.Update(cart)
-	return nil
 }
 
 //DeleteCart removes the cart of user

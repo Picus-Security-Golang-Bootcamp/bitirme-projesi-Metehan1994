@@ -62,40 +62,42 @@ func main() {
 
 	// Router group
 	rootRouter := r.Group(cfg.ServerConfig.RoutePrefix)
-	authRooter := rootRouter.Group("/user")
-	categoryRooter := rootRouter.Group("/category")
-	productRooter := rootRouter.Group("/product")
-	cartRooter := rootRouter.Group("/cart")
-	orderRooter := rootRouter.Group("/order")
+	authRouter := rootRouter.Group("/user")
+	categoryRouter := rootRouter.Group("/category")
+	productRouter := rootRouter.Group("/product")
+	cartRouter := rootRouter.Group("/cart")
+	orderRouter := rootRouter.Group("/order")
 
 	// Product Repository
 	productRepo := product.NewProductRepository(DB)
 	productRepo.Migration()
-	product.NewProductHandler(productRooter, productRepo, cfg)
+	product.NewProductHandler(productRouter, productRepo, cfg)
 
 	// Category Repository
 	categoryRepo := category.NewCategoryRepository(DB)
 	categoryRepo.Migration()
-	category.NewCategoryHandler(categoryRooter, categoryRepo, cfg)
+	category.NewCategoryHandler(categoryRouter, categoryRepo, cfg)
 
 	//User Repository
 	userRepo := user.NewUserRepository(DB)
 	userRepo.Migration()
-	user.NewUserHandler(authRooter, cfg, userRepo)
+	user.NewUserHandler(authRouter, cfg, userRepo)
 
 	//Cart Repository
 	cartItemRepo := cart.NewCartItemRepository(DB)
 	cartRepo := cart.NewCartRepository(DB, cartItemRepo)
 	cartRepo.Migration()
 	cartItemRepo.Migration()
-	cart.NewCartHandler(cartRooter, cfg, cartRepo, productRepo, cartItemRepo, userRepo)
+	cartService := cart.InitializeCartService(cartRepo, productRepo, cartItemRepo)
+	cart.NewCartHandler(cartRouter, cfg, userRepo, cartService)
 
 	//Order Repository
 	orderItemRepo := order.NewOrderItemRepository(DB)
 	orderRepo := order.NewOrderRepository(DB, orderItemRepo, productRepo)
 	orderRepo.Migration()
 	orderItemRepo.Migration()
-	order.NewOrderHandler(orderRooter, cfg, orderRepo, productRepo, orderItemRepo, userRepo, cartRepo)
+	orderService := order.InitializeOrderService(orderRepo, productRepo, orderItemRepo, cartRepo)
+	order.NewOrderHandler(orderRouter, cfg, userRepo, orderService)
 
 	//Initialize products&categories&users
 	csvReader.ReadCSVforProducts("./pkg/csv/files/products.csv", categoryRepo, productRepo)
