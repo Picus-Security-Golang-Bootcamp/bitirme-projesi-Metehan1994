@@ -29,15 +29,6 @@ func signedUpUserToDBUser(s *api.SignUp) models.User {
 	}
 }
 
-// func responseToUser(u *api.User) *models.User {
-// 	return &models.User{
-// 		Username: *u.Username,
-// 		Email:    *u.Email,
-// 		IsAdmin:  u.IsAdmin,
-// 		ID:       uuid.New(),
-// 	}
-// }
-
 func RoleConvertToStringSlice(isAdmin bool) []string {
 	var roles []string
 	roles = append(roles, "customer")

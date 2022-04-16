@@ -71,17 +71,17 @@ func main() {
 	// Product Repository
 	productRepo := product.NewProductRepository(DB)
 	productRepo.Migration()
-	product.NewProductHandler(productRooter, productRepo)
+	product.NewProductHandler(productRooter, productRepo, cfg)
 
 	// Category Repository
 	categoryRepo := category.NewCategoryRepository(DB)
 	categoryRepo.Migration()
-	category.NewCategoryHandler(categoryRooter, categoryRepo)
+	category.NewCategoryHandler(categoryRooter, categoryRepo, cfg)
 
 	//User Repository
 	userRepo := user.NewUserRepository(DB)
 	userRepo.Migration()
-	user.NewUserHandler(authRooter, cfg, userRepo, categoryRepo, productRepo)
+	user.NewUserHandler(authRooter, cfg, userRepo)
 
 	//Cart Repository
 	cartItemRepo := cart.NewCartItemRepository(DB)

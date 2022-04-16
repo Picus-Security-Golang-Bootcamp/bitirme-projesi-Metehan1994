@@ -1,47 +1,32 @@
 package user
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/Metehan1994/final-project/internal/api"
-	"github.com/Metehan1994/final-project/internal/category"
 	httpErrors "github.com/Metehan1994/final-project/internal/httpErrors"
-	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/Metehan1994/final-project/pkg/config"
 	jwtHelper "github.com/Metehan1994/final-project/pkg/jwt"
 	mw "github.com/Metehan1994/final-project/pkg/middleware"
 	"github.com/gin-gonic/gin"
-	"github.com/go-openapi/strfmt"
-	"go.uber.org/zap"
 )
 
 type userHandler struct {
-	cfg          *config.Config
-	userRepo     *UserRepository
-	categoryRepo *category.CategoryRepository
-	productRepo  *product.ProductRepository
+	cfg      *config.Config
+	userRepo *UserRepository
 }
 
-func NewUserHandler(r *gin.RouterGroup, cfg *config.Config, userRepo *UserRepository, categoryRepo *category.CategoryRepository,
-	productRepo *product.ProductRepository) {
+func NewUserHandler(r *gin.RouterGroup, cfg *config.Config, userRepo *UserRepository) {
 	uHandler := userHandler{
-		cfg:          cfg,
-		userRepo:     userRepo,
-		categoryRepo: categoryRepo,
-		productRepo:  productRepo,
+		cfg:      cfg,
+		userRepo: userRepo,
 	}
 	r.POST("/login", uHandler.login)
 	r.POST("/signup", uHandler.signUp)
 	r.Use(mw.TokenExpControlMiddleware(cfg.JWTConfig.SecretKey))
 
 	r.Use(mw.AuthMiddleware(cfg.JWTConfig.SecretKey))
-	r.POST("/admin/addBulkCategory", uHandler.addBulkCategory)
 	r.POST("/decode", uHandler.VerifyToken)
-	r.POST("/admin/createProduct", uHandler.createProduct)
-	r.PUT("/admin/updateProduct/:id", uHandler.updateProduct)
-	r.DELETE("/admin/deleteProduct/:id", uHandler.deleteProduct)
 
 }
 
@@ -104,72 +89,8 @@ func (u *userHandler) signUp(c *gin.Context) {
 	c.JSON(http.StatusOK, token)
 }
 
-func (u *userHandler) addBulkCategory(c *gin.Context) {
-	file, err := c.FormFile("file")
-	if err != nil {
-		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "Cannot upload file.", nil)))
-		return
-	}
-	fileDir := "pkg/csv/files/saved/" + file.Filename
-	err = c.SaveUploadedFile(file, fileDir)
-	if err != nil {
-		zap.L().Fatal(err.Error())
-	}
-	c.JSON(http.StatusOK, fmt.Sprintf("'%s' is uploaded!", file.Filename))
-	ReadCSVforCategory(fileDir, u.categoryRepo)
-}
-
 func (u *userHandler) VerifyToken(c *gin.Context) {
 	token := c.GetHeader("Authorization")
 	decodedClaims := jwtHelper.VerifyToken(token, u.cfg.JWTConfig.SecretKey)
 	c.JSON(http.StatusOK, decodedClaims)
-}
-
-func (u *userHandler) deleteProduct(c *gin.Context) {
-	idint, _ := strconv.Atoi(c.Param("id"))
-	err := u.productRepo.DeleteById(idint)
-	if err != nil {
-		c.JSON(httpErrors.ErrorResponse(err))
-		return
-	}
-	c.JSON(http.StatusAccepted, "The product is successfully deleted.")
-}
-
-func (u *userHandler) createProduct(c *gin.Context) {
-	productBody := &api.Product{}
-	if err := c.Bind(&productBody); err != nil {
-		c.JSON(httpErrors.ErrorResponse(httpErrors.CannotBindGivenData))
-		return
-	}
-
-	if err := productBody.Validate(strfmt.NewFormats()); err != nil {
-		c.JSON(httpErrors.ErrorResponse(err))
-		return
-	}
-	productRepo, err := u.productRepo.Create(*product.ResponseToProduct(productBody))
-	if err != nil {
-		c.JSON(httpErrors.ErrorResponse(err))
-		return
-	}
-	c.JSON(http.StatusOK, product.ProductToResponse(productRepo))
-}
-
-func (u *userHandler) updateProduct(c *gin.Context) {
-	idint, _ := strconv.Atoi(c.Param("id"))
-
-	productBody2, err := u.productRepo.GetByID(idint)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
-	}
-	if err := c.Bind(&productBody2); err != nil {
-		c.JSON(httpErrors.ErrorResponse(httpErrors.CannotBindGivenData))
-		return
-	}
-
-	prod, err := u.productRepo.Update(*productBody2)
-	if err != nil {
-		c.JSON(httpErrors.ErrorResponse(err))
-		return
-	}
-	c.JSON(http.StatusOK, product.ProductToResponse(prod))
 }
