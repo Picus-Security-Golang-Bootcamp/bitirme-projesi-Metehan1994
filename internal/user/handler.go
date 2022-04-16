@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/Metehan1994/final-project/internal/api"
 	"github.com/Metehan1994/final-project/internal/category"
@@ -15,7 +14,6 @@ import (
 	mw "github.com/Metehan1994/final-project/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/strfmt"
-	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 )
 
@@ -54,7 +52,7 @@ func (u *userHandler) login(c *gin.Context) {
 		return
 	}
 	user := u.userRepo.GetUserByEmail(*req.Email)
-	fmt.Println(user)
+
 	if user.Email == "" {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "user not found", nil)))
 		return
@@ -64,16 +62,7 @@ func (u *userHandler) login(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "password is wrong", nil)))
 		return
 	}
-	apiUser := userToResponse(user)
-	roles := RoleConvertToStringSlice(apiUser.IsAdmin)
-	jwtClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": apiUser.Username,
-		"email":    apiUser.Email,
-		"userId":   apiUser.ID,
-		"iat":      time.Now().Unix(),
-		"exp":      time.Now().Add(24 * time.Hour).Unix(),
-		"roles":    roles,
-	})
+	jwtClaims := JWTClaimsGenerator(user)
 	token := jwtHelper.GenerateToken(jwtClaims, u.cfg.JWTConfig.SecretKey)
 	c.JSON(http.StatusOK, token)
 }
@@ -110,16 +99,7 @@ func (u *userHandler) signUp(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusInternalServerError, "Internal Error.", nil)))
 		return
 	}
-	apiUser := userToResponse(user)
-	roles := RoleConvertToStringSlice(apiUser.IsAdmin)
-	jwtClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": apiUser.Username,
-		"email":    apiUser.Email,
-		"userId":   apiUser.ID,
-		"iat":      time.Now().Unix(),
-		"exp":      time.Now().Add(24 * time.Hour).Unix(),
-		"roles":    roles,
-	})
+	jwtClaims := JWTClaimsGenerator(user)
 	token := jwtHelper.GenerateToken(jwtClaims, u.cfg.JWTConfig.SecretKey)
 	c.JSON(http.StatusOK, token)
 }
@@ -166,7 +146,6 @@ func (u *userHandler) createProduct(c *gin.Context) {
 		c.JSON(httpErrors.ErrorResponse(err))
 		return
 	}
-
 	productRepo, err := u.productRepo.Create(*product.ResponseToProduct(productBody))
 	if err != nil {
 		c.JSON(httpErrors.ErrorResponse(err))

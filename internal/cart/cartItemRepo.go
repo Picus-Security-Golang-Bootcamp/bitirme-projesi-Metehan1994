@@ -21,24 +21,35 @@ func (c *CartItemRepository) Migration() {
 	c.db.AutoMigrate(&models.CartItem{})
 }
 
+//GetItemByProductID finds the cart item by product ID
 func (c *CartItemRepository) GetItemByProductID(productId int) *models.CartItem {
+	zap.L().Debug("cartItem.repo.getItemById", zap.Reflect("productid", productId))
 	var Item *models.CartItem
 	c.db.Where("product_id=?", productId).Find(&Item)
 	return Item
 }
 
+//UpdateCartItem updates the cart item based on the changes
 func (c *CartItemRepository) UpdateCartItem(cartItem *models.CartItem) {
+	zap.L().Debug("cartItem.repo.UpdateCartItem", zap.Reflect("cartItem", cartItem))
 	result := c.db.Preload("Product").Where("product_id=?", cartItem.ProductID).Save(&cartItem)
 	if result.Error != nil {
 		zap.L().Fatal(result.Error.Error())
 	}
 }
 
+//CreateCartItem creates a new cart item
 func (c *CartItemRepository) CreateCartItem(cartItem *models.CartItem) {
-	c.db.Unscoped().Preload("Cart").Where("product_id=?", cartItem.ProductID).Create(&cartItem)
+	zap.L().Debug("cartItem.repo.CreateCartItem", zap.Reflect("cartItem", cartItem))
+	result := c.db.Unscoped().Preload("Cart").Where("product_id=?", cartItem.ProductID).Create(&cartItem)
+	if result.Error != nil {
+		zap.L().Fatal(result.Error.Error())
+	}
 }
 
+//AddItem adds the product to cart if it is not found
 func (c *CartItemRepository) AddItem(cart *models.Cart, product *models.Product, quantity int) (*models.Cart, error) {
+	zap.L().Debug("cartItem.repo.AddItem")
 	var foundCart bool = false
 	for _, item := range cart.Items {
 		if item.ProductID == product.ID {
@@ -120,6 +131,7 @@ func (c *CartItemRepository) DeleteById(cart *models.Cart, id uint) (*models.Car
 	return cart, nil
 }
 
+//UpdateQuantity updates the quantity of cart item with given ID
 func (c *CartItemRepository) UpdateQuantityById(cart *models.Cart, id int, quantity int) (*models.Cart, error) {
 	zap.L().Debug("cartItem.repo.updateQuantityById", zap.Reflect("id", id))
 	var cartItem models.CartItem

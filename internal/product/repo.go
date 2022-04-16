@@ -31,10 +31,11 @@ func (p *ProductRepository) InsertSampleData(product *models.Product) {
 //Create creates a new product
 func (p *ProductRepository) Create(product models.Product) (*models.Product, error) {
 	zap.L().Debug("product.repo.create", zap.Reflect("product", product))
-	result := p.db.Where("sku = ?", product.Sku).FirstOrCreate(&product)
+	result := p.db.Where("sku = ?", product.Sku).Create(&product)
 	if result.Error != nil {
 		return nil, result.Error
 	}
+	p.db.Preload("Category").Where("sku = ?", product.Sku).First(&product)
 	return &product, nil
 }
 
@@ -71,6 +72,7 @@ func (p *ProductRepository) DeleteById(id int) error {
 
 //GetByID provides the product info for a given ID
 func (p *ProductRepository) GetByID(ID int) (*models.Product, error) {
+	zap.L().Debug("product.repo.getbyID", zap.Reflect("id", ID))
 	var product models.Product
 	result := p.db.Preload("Category").First(&product, ID)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -79,6 +81,17 @@ func (p *ProductRepository) GetByID(ID int) (*models.Product, error) {
 	return &product, nil
 }
 
+//GetBySku provides the product info for a given sku
+func (p *ProductRepository) GetBySku(sku string) *models.Product {
+	var product *models.Product
+	result := p.db.Where("sku=?", sku).First(&product)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	return product
+}
+
+//UpdateProductQuantityAfterSale reduces the product amount which is found in the cart after completing order
 func (p *ProductRepository) UpdateProductQuantityAfterSale(cartItem *models.CartItem) error {
 	product := &cartItem.Product
 	fmt.Println(product)
@@ -94,6 +107,7 @@ func (p *ProductRepository) UpdateProductQuantityAfterSale(cartItem *models.Cart
 	return nil
 }
 
+//UpdateProductQuantityAfterSale increases the product amount which is found in the order after canceling order
 func (p *ProductRepository) UpdateProductQuantityAfterCancel(orderItem *models.OrderItem) error {
 	product := &orderItem.Product
 	fmt.Println(product)
@@ -106,6 +120,7 @@ func (p *ProductRepository) UpdateProductQuantityAfterCancel(orderItem *models.O
 	return nil
 }
 
+//ListProductsWithCategories provides a list of product with pagination
 func (p *ProductRepository) ListProductsWithCategories(pageIndex, pageSize int) ([]*models.Product, int) {
 	zap.L().Debug("product.repo.ListProducts")
 	var allproducts []*models.Product
@@ -116,6 +131,7 @@ func (p *ProductRepository) ListProductsWithCategories(pageIndex, pageSize int) 
 	return products, count
 }
 
+//SearchByName finds the products which includes the given word in name
 func (p *ProductRepository) SearchByName(name string) ([]*models.Product, error) {
 	var products []*models.Product
 	result := p.db.Preload("Category").Where("name ILIKE ? ", "%"+name+"%").Find(&products)
@@ -125,6 +141,7 @@ func (p *ProductRepository) SearchByName(name string) ([]*models.Product, error)
 	return products, nil
 }
 
+//SearchByName finds the products which includes the given word in sku
 func (p *ProductRepository) SearchBySku(word string) ([]*models.Product, error) {
 	var products []*models.Product
 	result := p.db.Preload("Category").Where("sku ILIKE ? ", "%"+word+"%").Find(&products)

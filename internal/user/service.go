@@ -4,9 +4,11 @@ import (
 	"encoding/csv"
 	"net/mail"
 	"os"
+	"time"
 
 	"github.com/Metehan1994/final-project/internal/category"
 	"github.com/Metehan1994/final-project/internal/models"
+	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -56,4 +58,19 @@ func ReadCSVforCategory(filename string, categoryRepo *category.CategoryReposito
 		category.Description = line[1]
 		categoryRepo.InsertSampleData(&category)
 	}
+}
+
+//JWTClaimsGenerator generates a JWTClaims for a given user
+func JWTClaimsGenerator(user *models.User) *jwt.Token {
+	apiUser := userToResponse(user)
+	roles := RoleConvertToStringSlice(apiUser.IsAdmin)
+	jwtClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": apiUser.Username,
+		"email":    apiUser.Email,
+		"userId":   apiUser.ID,
+		"iat":      time.Now().Unix(),
+		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+		"roles":    roles,
+	})
+	return jwtClaims
 }

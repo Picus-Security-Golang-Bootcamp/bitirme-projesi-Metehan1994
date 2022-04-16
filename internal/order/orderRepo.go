@@ -8,6 +8,7 @@ import (
 	"github.com/Metehan1994/final-project/internal/models"
 	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +26,9 @@ func (o *OrderRepository) Migration() {
 	o.db.AutoMigrate(&models.Order{})
 }
 
+//CompleteOrder creates order and order item and update the product amount
 func (o *OrderRepository) CompleteOrder(cart *models.Cart) (*models.Order, error) {
+	zap.L().Debug("Order.repo.CompleteOrder", zap.Reflect("cart", cart))
 	tx := o.db.Begin()
 
 	order := &models.Order{
@@ -62,7 +65,9 @@ func (o *OrderRepository) CompleteOrder(cart *models.Cart) (*models.Order, error
 	return order, nil
 }
 
+//OrderGetWithItems list the order items in an order with products
 func (o *OrderRepository) OrderGetWithItems(order *models.Order) (*models.Order, error) {
+	zap.L().Debug("Order.repo.OrderGetWithItems", zap.Reflect("order", order))
 	result := o.db.Preload("Items.Product").First(&order)
 	if result.Error != nil {
 		return nil, result.Error
@@ -70,7 +75,9 @@ func (o *OrderRepository) OrderGetWithItems(order *models.Order) (*models.Order,
 	return order, nil
 }
 
+//OrderGetWithItems list the number of orders created by a user
 func (o *OrderRepository) GetOrdersByUserID(userID uuid.UUID) ([]*models.Order, error) {
+	zap.L().Debug("Order.repo.OrderGetByUserID", zap.Reflect("userID", userID))
 	var orders []*models.Order
 	result := o.db.Preload("Items.Product").Where("user_id=?", userID).Find(&orders)
 	if result.Error != nil {
@@ -79,7 +86,9 @@ func (o *OrderRepository) GetOrdersByUserID(userID uuid.UUID) ([]*models.Order, 
 	return orders, nil
 }
 
+//CancelOrder manages the order cancelation by changing order status and updating product amount in the list
 func (o *OrderRepository) CancelOrder(userID uuid.UUID, id string) (*models.Order, error) {
+	zap.L().Debug("Order.repo.CancelOrder")
 	var order *models.Order
 	orders, err := o.GetOrdersByUserID(userID)
 	if err != nil {

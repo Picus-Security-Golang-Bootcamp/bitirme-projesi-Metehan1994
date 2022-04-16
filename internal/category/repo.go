@@ -24,6 +24,7 @@ func NewCategoryRepository(db *gorm.DB) *CategoryRepository {
 // 	return category, nil
 // }
 
+//ListCategoriesWithProducts brings the list of categories with their products
 func (c *CategoryRepository) ListCategoriesWithProducts(pageIndex, pageSize int) ([]*models.Category, int) {
 	zap.L().Debug("category.repo.ListCategories")
 	var allcategories []*models.Category
