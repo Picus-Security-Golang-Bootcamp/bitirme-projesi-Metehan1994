@@ -9,81 +9,385 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: localhost:8080
 basePath: "/api/v1/basket-service-api"
 tags:
   - name: "user"
     description: "Everything about Users"
+  - name: "product"
+    description: "Everything about Products"
+  - name: "category"
+    description: "Everything about Categories"
+  - name: "cart"
+    description: "Everything about Carts"
+  - name: "order"
+    description: "Everything about Orders"
 
 schemes:
   - "https"
   - "http"
 paths:
-  /user:
+  /user/login:
     post:
       tags:
-        - "user"
-      summary: "Create user"
-      description: "This can only be done by the logged in user."
-      operationId: "createUser"
+        - "User"
+      summary: "Login to the system"
+      description: "This can only be done by users."
+      operationId: "Userlogin"
       produces:
         - "application/json"
       parameters:
         - in: "body"
           name: "body"
-          description: "Created user object"
-          required: true
-          schema:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/login:
-    get:
-      tags:
-        - "user"
-      summary: "Logs user into the system"
-      description: ""
-      operationId: "loginUser"
-      produces:
-        - "application/xml"
-        - "application/json"
-      parameters:
-        - in: "body"
-          name: "body"
-          description: "Author object that needs to be added to the store"
+          description: "Info required for login (Email and Password)"
           required: true
           schema:
             $ref: "#/definitions/Login"
       responses:
         "200":
-          description: "successful operation"
-          schema:
-            type: "string"
-          headers:
-            X-Rate-Limit:
-              type: "integer"
-              format: "int32"
-              description: "calls per hour allowed by the user"
-            X-Expires-After:
-              type: "string"
-              format: "date-time"
-              description: "date in UTC when token expires"
+          description: "successful login"
         "400":
-          description: "Invalid username/password supplied"
-  /user/logout:
+          description: "check your request body"
+        "404":
+          description: "user not found"
+  /user/signup:
+    post:
+      tags:
+        - "User"
+      summary: "User signing up into the system"
+      description: "This can only be done for new users."
+      operationId: "SignupUser"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Info required for sign up"
+          required: true
+          schema:
+            $ref: "#/definitions/SignUp"
+      responses:
+        "200":
+          description: "successful signin up"
+        "400":
+          description: "bad requests for signing up"
+        "500":
+          description: "Internal Error"
+  /category/list:
     get:
       tags:
-        - "user"
-      summary: "Logs out current logged in user session"
-      description: ""
-      operationId: "logoutUser"
+        - "Category"
+      summary: "Listing Categories"
+      description: "Returns all paginated categories"
+      operationId: "CategoryList"
       produces:
-        - "application/xml"
         - "application/json"
-      parameters: [ ]
       responses:
-        default:
+        "200":
           description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Category"
+  /category/admin/addBulkCategory:
+    post:
+      tags:
+        - "Category"
+      summary: "Adding Categories"
+      description: ""
+      operationId: "addBulkCategory"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Form Data Input of CSV"
+          required: true
+          schema:
+            $ref: "#/definitions/Category"
+      responses:
+        "200":
+          description: "CSV is uploaded"
+        "400":
+          description: "Cannot upload CSV"
+  /product/list:
+    get:
+      tags:
+        - "Product"
+      summary: "Listing Products"
+      description: "Returns all paginated products"
+      operationId: "ProductList"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Product"
+  /product/search/name/{word}:
+    get:
+      tags:
+        - "Product"
+      summary: "Listing Products with given name"
+      description: "Returns products including word in name"
+      operationId: "SearchByName"
+      parameters:
+        - name: "word"
+          in: "path"
+          description: "word to list"
+          required: true
+          type: "string"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Product"
+  /product/search/sku/{word}:
+    get:
+      tags:
+        - "Product"
+      summary: "Listing Products including word in sku"
+      description: "Returns products including word in sku"
+      operationId: "SearchBySku"
+      parameters:
+        - name: "word"
+          in: "path"
+          description: "word to list"
+          required: true
+          type: "string"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Product"
+  /product/admin/createProduct:
+    post:
+      tags:
+        - "Product"
+      summary: "Creating a new product"
+      description: ""
+      operationId: "createProduct"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Product object that needs to be added to the db"
+        required: true
+        schema:
+          $ref: "#/definitions/Product"
+      responses:
+        "200":
+          description: "Status OK"
+        "400":
+          description: "Bad request by invalid input"
+        "403":
+          description: "forbidden to use"
+        "500":
+          description: "Internal Error"
+  /product/admin/updateProduct/{id}:
+    put:
+      tags:
+        - "Product"
+      summary: "Updating a property of a product"
+      description: ""
+      operationId: "updateProduct"
+      produces:
+        - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Updating product object found in the db"
+        required: true
+        schema:
+          $ref: "#/definitions/Product"
+      - name: "id"
+        in: "path"
+        description: "ProductID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "successful operation"
+        "403":
+          description: "forbidden to use"
+        "500":
+          description: "Internal Error"
+  /product/admin/deleteProduct/{id}:
+    delete:
+      tags:
+        - "Product"
+      summary: "Deleting a product by given ID"
+      description: ""
+      operationId: "deleteProduct"
+      produces:
+        - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ProductID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "202":
+          description: "successful operation"
+        "403":
+          description: "forbidden to use"
+        "404":
+          description: "No product with this ID"
+  /cart/addToCart/productId/{id}/quantity/{quantity}:
+    post:
+      tags:
+        - "Cart"
+      summary: "Add to cart"
+      description: ""
+      operationId: "AddToCart"
+      produces:
+        - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ProductID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "quantity"
+        in: "path"
+        description: "Quantity"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "successful operation"
+        "403":
+          description: "forbidden to use"
+  /cart/listCartItems:
+    get:
+      tags:
+        - "Cart"
+      summary: "List cart items of a user with the authentication"
+      description: ""
+      operationId: "ListCartItems"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "403":
+          description: "forbidden to use"
+  /cart/deleteItem/{id}:
+    get:
+      tags:
+        - "Cart"
+      summary: "Delete item of a cart of a user"
+      description: ""
+      operationId: "DeleteItem"
+      produces:
+        - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ItemID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "202":
+          description: "successful operation"
+        "403":
+          description: "forbidden to use"
+        "404":
+          description: "No product with this ID"
+  /cart/updateItem/{id}/quantity/{quantity}:
+    put:
+      tags:
+        - "Cart"
+      summary: "Updating product quantity of an item"
+      description: ""
+      operationId: "UpdateQuantity"
+      produces:
+        - "application/json"
+      parameters:
+      - name: "id" 
+        in: "path"
+        description: "ItemID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "quantity"
+        in: "path"
+        description: "Quantity"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Bad request to update quantity of item not found"
+        "403":
+          description: "forbidden to use"
+  /order/completeOrder:
+    put:
+      tags:
+       - "Order"
+      summary: "Completing an order of a user"
+      description: ""
+      operationId: "CompleteOrder"
+      produces:
+        - "application/json"
+      responses:
+        "202":
+          description: "successful operation"
+        "400":
+          description: "Bad Request due to inadequate amount of product"
+        "404":
+          description: "Not found cart"
+  /order/listOrder:
+    get:
+      tags:
+       - "Order"
+      summary: "Listing orders of user up to date"
+      description: ""
+      operationId: "ListOrder"
+      produces:
+        - "application/json"
+      responses:
+        "202":
+          description: "successful operation"
+        "404":
+          description: "Not found cart"
+  /order/CancelOrder:
+    put:
+      tags:
+       - "Order"
+      summary: "Canceling an order up to 14 days"
+      description: ""
+      operationId: "CancelOrder"
+      produces:
+        - "application/json"
+      responses:
+        "202":
+          description: "successful operation"
+        "400":
+          description: "bad request"
+        "404":
+          description: "Not found cart"
 definitions:
   Category:
     type: "object"

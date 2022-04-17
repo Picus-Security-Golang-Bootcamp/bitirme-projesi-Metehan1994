@@ -86,7 +86,7 @@ func (cHandler *CartHandler) DeleteItem(c *gin.Context) {
 	idint, _ := strconv.Atoi(c.Param("itemId"))
 	err = cHandler.cartService.DeleteItem(userDB.ID, idint)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusNotFound, err.Error())
 		return
 	}
 	c.JSON(http.StatusAccepted, "The product is successfully deleted.")

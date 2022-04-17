@@ -39,7 +39,7 @@ func (u *userHandler) login(c *gin.Context) {
 	user := u.userRepo.GetUserByEmail(*req.Email)
 
 	if user.Email == "" {
-		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "user not found", nil)))
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusNotFound, "user not found", nil)))
 		return
 	}
 	err := ComparePasswordWithHashedOne(user.Password, *req.Password)
