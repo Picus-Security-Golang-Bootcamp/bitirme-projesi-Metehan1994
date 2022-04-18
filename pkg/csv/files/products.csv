@@ -1,5 +1,20 @@
 Product_Name,Product_Description,Price,Quantity,Stock_Code,Category_Name,Category_Description
-Sport Shoes,NULL,200,20,Product1111,Shoes,NULL
-Woman Shoes,NULL,300,30,Product1112,Shoes,NULL
-Cell Phone,NULL,4500,15,Product1113,Electronics,NULL
-Children Shoes,NULL,250,20,Product1114,Shoes,NULL
+Sport Shoes,,200,20,Product1111,Shoes,
+Woman Shoes,,300,30,Product1112,Shoes,
+Cell Phone,,4500,15,Product1113,Electronics,
+Children Shoes,,250,20,Product1114,Shoes,
+Shampoo,,30,20,Product1115,Cosmetic,
+Perfume,,100,10,Product1116,Cosmetic,
+Cream,,30,30,Product1117,Cosmetic,
+Boot,,300,5,Product1118,Shoes,
+Camera,,4000,15,Product1119,Electronics,
+Laptop,,13000,10,Product1120,Electronics,
+Computer,,13000,15,Product1121,Electronics,
+Web Cam,,1000,15,Product1122,Electronics,
+T-Shirt,,100,60,Product1123,Clothes,
+Dress,,100,10,Product1124,Clothes,
+Shirt,,90,20,Product1125,Clothes,
+Skirt,,70,50,Product1126,Clothes,
+Shorts,,70,10,Product1127,Clothes,
+Pant,,100,40,Product1128,Clothes,
+Hand Cream,,20,100,Product1129,Cosmetic,

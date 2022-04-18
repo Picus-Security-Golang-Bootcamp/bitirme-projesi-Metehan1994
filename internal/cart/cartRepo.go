@@ -26,9 +26,7 @@ func (c *CartRepository) Migration() {
 func (c *CartRepository) GetCartByUserID(UserID uuid.UUID) *models.Cart {
 	zap.L().Debug("cart.repo.GetCartByUserID", zap.Reflect("UserID", UserID))
 	var cart models.Cart
-	//cart.UserID = UserID
 	c.db.Preload("Items.Product").Where("user_id=?", UserID).Find(&cart)
-	fmt.Println(cart)
 	return &cart
 }
 

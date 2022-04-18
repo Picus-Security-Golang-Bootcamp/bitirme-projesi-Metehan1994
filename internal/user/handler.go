@@ -33,7 +33,7 @@ func NewUserHandler(r *gin.RouterGroup, cfg *config.Config, userRepo *UserReposi
 func (u *userHandler) login(c *gin.Context) {
 	var req api.Login
 	if err := c.Bind(&req); err != nil {
-		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "check your request body", nil)))
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "check your request body", err.Error())))
 		return
 	}
 	user := u.userRepo.GetUserByEmail(*req.Email)
@@ -55,7 +55,7 @@ func (u *userHandler) login(c *gin.Context) {
 func (u *userHandler) signUp(c *gin.Context) {
 	var req api.SignUp
 	if err := c.Bind(&req); err != nil {
-		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "check your request body", nil)))
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "check your request body", err.Error())))
 		return
 	}
 	if !ParseEmail(*req.Email) {
@@ -81,7 +81,7 @@ func (u *userHandler) signUp(c *gin.Context) {
 	DBUser := signedUpUserToDBUser(&req)
 	user, err := u.userRepo.CreateNewUser(DBUser)
 	if err != nil {
-		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusInternalServerError, "Internal Error.", nil)))
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusInternalServerError, "Internal Error.", err.Error())))
 		return
 	}
 	jwtClaims := JWTClaimsGenerator(user)

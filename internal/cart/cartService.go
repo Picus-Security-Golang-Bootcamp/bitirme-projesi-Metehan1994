@@ -2,7 +2,6 @@ package cart
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/Metehan1994/final-project/internal/models"
 	"github.com/Metehan1994/final-project/internal/product"
@@ -27,8 +26,7 @@ func (cserv *CartService) GetOrCreateCart(userID uuid.UUID) (*models.Cart, strin
 	cart := cserv.Cartrepo.GetCartByUserID(userID)
 	var s string
 	if cart.ID != uuid.Nil {
-		s = "You have already a cart. New item will be added to it."
-		fmt.Println(s)
+		s = "Info: You have already a cart. New item will be added to it."
 	} else {
 		cart.UserID = userID
 		cart = cserv.Cartrepo.CreateCart(cart)

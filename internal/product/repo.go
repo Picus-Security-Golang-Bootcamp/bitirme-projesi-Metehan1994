@@ -17,6 +17,16 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
+type IProductRepository interface {
+	Create(a models.Product) (*models.Product, error)
+	Update(models.Product) (*models.Product, error)
+	DeleteById(id int) error
+	GetByID(ID int) (*models.Product, error)
+	GetBySku(sku string) *models.Product
+	UpdateProductQuantityAfterSale(cartItem *models.CartItem) error
+	UpdateProductQuantityAfterCancel(orderItem *models.OrderItem) error
+}
+
 func (p *ProductRepository) Migration() {
 	p.db.AutoMigrate(&models.Product{})
 }
@@ -24,14 +34,14 @@ func (p *ProductRepository) Migration() {
 func (p *ProductRepository) InsertSampleData(product *models.Product) {
 	result := p.db.Unscoped().Where(models.Product{Name: product.Name}).FirstOrCreate(&product)
 	if result.Error != nil {
-		zap.L().Fatal("Cannot insert data into DB") //Check error
+		zap.L().Fatal("Cannot insert data into DB")
 	}
 }
 
 //Create creates a new product
 func (p *ProductRepository) Create(product models.Product) (*models.Product, error) {
 	zap.L().Debug("product.repo.create", zap.Reflect("product", product))
-	result := p.db.Where("sku = ?", product.Sku).Create(&product)
+	result := p.db.Where("sku = ?", product.Sku).FirstOrCreate(&product)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -94,7 +104,6 @@ func (p *ProductRepository) GetBySku(sku string) *models.Product {
 //UpdateProductQuantityAfterSale reduces the product amount which is found in the cart after completing order
 func (p *ProductRepository) UpdateProductQuantityAfterSale(cartItem *models.CartItem) error {
 	product := &cartItem.Product
-	fmt.Println(product)
 	if product.Quantity < cartItem.Amount {
 		return errors.New("not enough product. Please check product availability from the list once more")
 	}
@@ -103,20 +112,17 @@ func (p *ProductRepository) UpdateProductQuantityAfterSale(cartItem *models.Cart
 	if result.Error != nil {
 		return result.Error
 	}
-	fmt.Println(product.Quantity)
 	return nil
 }
 
 //UpdateProductQuantityAfterSale increases the product amount which is found in the order after canceling order
 func (p *ProductRepository) UpdateProductQuantityAfterCancel(orderItem *models.OrderItem) error {
 	product := &orderItem.Product
-	fmt.Println(product)
 	result := p.db.Model(&product).Where("id = ?", product.ID).
 		Update("quantity", gorm.Expr("quantity + ?", orderItem.Amount))
 	if result.Error != nil {
 		return result.Error
 	}
-	fmt.Println(product.Quantity)
 	return nil
 }
 

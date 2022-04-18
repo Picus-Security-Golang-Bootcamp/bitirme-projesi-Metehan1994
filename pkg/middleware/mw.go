@@ -1,7 +1,6 @@
 package mw
 
 import (
-	"fmt"
 	"time"
 
 	jwtHelper "github.com/Metehan1994/final-project/pkg/jwt"
@@ -16,10 +15,8 @@ func TokenExpControlMiddleware(secretKey string) gin.HandlerFunc {
 			decodedClaims := jwtHelper.VerifyToken(c.GetHeader("Authorization"), secretKey)
 			if decodedClaims != nil {
 				c.Set("user", decodedClaims)
-				fmt.Println(decodedClaims.Exp)
 				jwtTime := time.Unix(decodedClaims.Exp, 0)
 				timeNow := time.Now()
-				fmt.Println(jwtTime)
 				if timeNow.Before(jwtTime) {
 					c.Next()
 					c.Abort()

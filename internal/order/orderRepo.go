@@ -2,20 +2,17 @@ package order
 
 import (
 	"github.com/Metehan1994/final-project/internal/models"
-	"github.com/Metehan1994/final-project/internal/product"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type OrderRepository struct {
-	db            *gorm.DB
-	orderItemRepo *OrderItemRepository
-	productRepo   *product.ProductRepository
+	db *gorm.DB
 }
 
-func NewOrderRepository(db *gorm.DB, orderItemRepo *OrderItemRepository, productRepo *product.ProductRepository) *OrderRepository {
-	return &OrderRepository{db: db, orderItemRepo: orderItemRepo, productRepo: productRepo}
+func NewOrderRepository(db *gorm.DB) *OrderRepository {
+	return &OrderRepository{db: db}
 }
 
 func (o *OrderRepository) Migration() {

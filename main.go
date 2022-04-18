@@ -93,7 +93,7 @@ func main() {
 
 	//Order Repository
 	orderItemRepo := order.NewOrderItemRepository(DB)
-	orderRepo := order.NewOrderRepository(DB, orderItemRepo, productRepo)
+	orderRepo := order.NewOrderRepository(DB)
 	orderRepo.Migration()
 	orderItemRepo.Migration()
 	orderService := order.InitializeOrderService(orderRepo, productRepo, orderItemRepo, cartRepo)

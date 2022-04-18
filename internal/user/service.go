@@ -43,7 +43,7 @@ func JWTClaimsGenerator(user *models.User) *jwt.Token {
 		"email":    apiUser.Email,
 		"userId":   apiUser.ID,
 		"iat":      time.Now().Unix(),
-		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+		"exp":      time.Now().Add(1 * time.Hour).Unix(),
 		"roles":    roles,
 	})
 	return jwtClaims

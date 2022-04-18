@@ -26,8 +26,8 @@ type ServerConfig struct {
 }
 
 type JWTConfig struct {
-	SessionTime int
-	SecretKey   string
+	SessionTimeinHour int
+	SecretKey         string
 }
 
 type DBConfig struct {

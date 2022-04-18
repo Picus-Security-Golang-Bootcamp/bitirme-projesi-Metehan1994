@@ -8,7 +8,7 @@ import (
 
 var (
 	// DefaultPageSize specifies the default page size
-	DefaultPageSize = 2
+	DefaultPageSize = 5
 	// MaxPageSize specifies the maximum page size
 	MaxPageSize = 100
 	// PageVar specifies the query parameter name for page number

@@ -2,7 +2,6 @@ package order
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/Metehan1994/final-project/internal/cart"
@@ -114,7 +113,6 @@ func (oserv *OrderService) CancelOrder(userID uuid.UUID, id string) (*models.Ord
 		}
 	}
 	for _, item := range order.Items {
-		fmt.Println(item.Product) //Productı buluyor.
 		err := oserv.productRepo.UpdateProductQuantityAfterCancel(&item)
 		if err != nil {
 			return nil, err

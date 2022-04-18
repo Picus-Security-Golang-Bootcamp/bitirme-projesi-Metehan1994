@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/Metehan1994/final-project/internal/models"
 	"github.com/google/uuid"
@@ -63,8 +62,6 @@ func (u *UserRepository) GetUserByEmail(email string) *models.User {
 //GetUserByEmail finds the user by id
 func (u *UserRepository) GetUserByID(Id string) (*models.User, error) {
 	zap.L().Debug("user.repo.GetUserByID", zap.Reflect("Id", Id))
-	//uuid, _ := uuid.FromBytes([]byte(Id))
-	fmt.Println(Id)
 	var user models.User
 	userUUID := uuid.MustParse(Id)
 	results := u.db.Where("id = ?", userUUID).Find(&user)
