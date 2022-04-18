@@ -90,16 +90,16 @@ func (pro *ProductHandler) deleteProduct(c *gin.Context) {
 func (pro *ProductHandler) updateProduct(c *gin.Context) {
 	idint, _ := strconv.Atoi(c.Param("id"))
 
-	productBody2, err := pro.productRepo.GetByID(idint)
+	productBody, err := pro.productRepo.GetByID(idint)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 	}
-	if err := c.Bind(&productBody2); err != nil {
+	if err := c.Bind(&productBody); err != nil {
 		c.JSON(httpErrors.ErrorResponse(httpErrors.CannotBindGivenData))
 		return
 	}
 
-	prod, err := pro.productRepo.Update(*productBody2)
+	prod, err := pro.productRepo.Update(*productBody)
 	if err != nil {
 		c.JSON(httpErrors.ErrorResponse(err))
 		return

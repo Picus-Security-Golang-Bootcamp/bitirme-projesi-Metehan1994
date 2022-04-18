@@ -19,7 +19,7 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 
 type IProductRepository interface {
 	Create(a models.Product) (*models.Product, error)
-	Update(models.Product) (*models.Product, error)
+	Update(a models.Product) (*models.Product, error)
 	DeleteById(id int) error
 	GetByID(ID int) (*models.Product, error)
 	GetBySku(sku string) *models.Product
@@ -32,7 +32,7 @@ func (p *ProductRepository) Migration() {
 }
 
 func (p *ProductRepository) InsertSampleData(product *models.Product) {
-	result := p.db.Unscoped().Where(models.Product{Name: product.Name}).FirstOrCreate(&product)
+	result := p.db.Unscoped().Where(models.Product{Sku: product.Sku}).FirstOrCreate(&product)
 	if result.Error != nil {
 		zap.L().Fatal("Cannot insert data into DB")
 	}
@@ -52,7 +52,7 @@ func (p *ProductRepository) Create(product models.Product) (*models.Product, err
 //Update updates the info for the product attributes
 func (p *ProductRepository) Update(product models.Product) (*models.Product, error) {
 	zap.L().Debug("product.repo.update", zap.Reflect("product", product))
-	result := p.db.Preload("Category").Save(&product)
+	result := p.db.Preload("Category").Where("sku = ?", product.Sku).Save(&product)
 
 	if result.Error != nil {
 		return nil, result.Error
